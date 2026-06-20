@@ -10,6 +10,7 @@ import { getErrorMessage } from '../api/errors';
 import { Screen } from '../components/Screen';
 import { AppButton } from '../components/AppButton';
 import { Dropdown } from '../components/Dropdown';
+import { PhotoPicker } from '../components/PhotoPicker';
 import { WINE_TYPE_OPTIONS } from '../constants';
 import { colors, spacing, input as inputStyle } from '../theme';
 
@@ -44,10 +45,6 @@ const EditWineScreen = () => {
     // Rating: must be 1-5 if provided
     if (form.rating && (isNaN(Number(form.rating)) || Number(form.rating) < 1 || Number(form.rating) > 5)) {
       return 'Rating must be a number between 1 and 5.';
-    }
-    // Optional: validate img_url if provided
-    if (form.img_url && !/^https?:\/\/.+\..+/.test(form.img_url)) {
-      return 'Photo URL must be a valid URL.';
     }
     return null;
   };
@@ -99,7 +96,7 @@ const EditWineScreen = () => {
       <TextInput style={styles.input} placeholder="Vintage" placeholderTextColor={colors.placeholder} value={String(form.vintage)} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
       <TextInput style={styles.input} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes} onChangeText={v => handleChange('tasting_notes', v)} />
       <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={String(form.rating)} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Photo URL (optional)" placeholderTextColor={colors.placeholder} value={form.img_url || ''} onChangeText={v => handleChange('img_url', v)} />
+      <PhotoPicker value={form.img_url || ''} onChange={v => handleChange('img_url', v)} />
       <AppButton title="Save Changes" variant="primary" onPress={handleSubmit} loading={loading} />
       <AppButton title="Cancel" variant="muted" onPress={() => navigation.goBack()} />
     </Screen>
