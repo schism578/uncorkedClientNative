@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
@@ -8,14 +8,10 @@ import { getAuthToken } from '../api/auth';
 import { API_URL } from '../api/config';
 import { getErrorMessage } from '../api/errors';
 
-type EditScreenRouteProp = {
-  params: {
-    wine: any;
-  };
-};
+type EditScreenRouteProp = RouteProp<RootStackParamList, 'EditWine'>;
 
 const EditWineScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'EditWine'>>();
   const route = useRoute<EditScreenRouteProp>();
   const { userInfo, wines, setWines } = useAppContext();
   const wine = route.params?.wine;
