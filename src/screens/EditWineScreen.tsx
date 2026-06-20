@@ -5,8 +5,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
 import { getAuthToken } from '../api/auth';
-
-const API_URL = 'https://thawing-anchorage-88444.herokuapp.com';
+import { API_URL } from '../api/config';
+import { getErrorMessage } from '../api/errors';
 
 type EditScreenRouteProp = {
   params: {
@@ -75,7 +75,7 @@ const EditWineScreen = () => {
       Alert.alert('Success', 'Wine updated!');
       navigation.goBack();
     } catch (err: any) {
-      setError(err.error || err.message || 'Failed to update wine');
+      setError(getErrorMessage(err, 'Failed to update wine'));
     } finally {
       setLoading(false);
     }

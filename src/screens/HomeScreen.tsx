@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAuthToken, clearAuthToken } from '../api/auth';
 import { useAppContext } from '../context';
+import type { Wine } from '../context';
 
 // Define the type for the stack's param list
 export type RootStackParamList = {
@@ -14,6 +15,7 @@ export type RootStackParamList = {
   Results: undefined;
   UserHistory: undefined;
   EditWine: { wine: any };
+  Pairing: { wine: Wine };
 };
 
 const HomeScreen = () => {

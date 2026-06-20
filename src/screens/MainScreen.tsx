@@ -7,12 +7,12 @@ import type { RootStackParamList } from './HomeScreen';
 import { getAuthToken, clearAuthToken } from '../api/auth';
 import { useAppContext } from '../context';
 import { fetchWineImage } from '../api/wine';
-
-const API_URL = 'https://thawing-anchorage-88444.herokuapp.com';
+import { API_URL } from '../api/config';
+import { getErrorMessage } from '../api/errors';
 
 const MainScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
-  const { setUserInfo, setWines } = useAppContext();
+  const { userInfo, setUserInfo, setWines } = useAppContext();
   const [form, setForm] = useState({
     winemaker: '',
     wine_type: '',
@@ -66,8 +66,8 @@ const MainScreen = () => {
     try {
       const token = await getAuthToken();
       if (!token) throw new Error('Not authenticated');
-      // In a real app, get user_id from user context or API
-      const user_id = '1'; // TODO: Replace with real user_id
+      if (!userInfo) throw new Error('Not authenticated');
+      const user_id = userInfo.user_id;
       let img_url = form.img_url;
       if (!img_url) {
         // Try to fetch an image from Unsplash
@@ -99,7 +99,7 @@ const MainScreen = () => {
       Alert.alert('Wine added!', 'Your wine has been saved.');
       navigation.navigate('UserHistory');
     } catch (err: any) {
-      setError(err.error || err.message || 'Failed to add wine');
+      setError(getErrorMessage(err, 'Failed to add wine'));
     } finally {
       setLoading(false);
     }

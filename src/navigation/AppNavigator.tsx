@@ -8,6 +8,7 @@ import SearchScreen from '../screens/SearchScreen';
 import ResultsScreen from '../screens/ResultsScreen';
 import UserHistoryScreen from '../screens/UserHistoryScreen';
 import EditWineScreen from '../screens/EditWineScreen';
+import PairingScreen from '../screens/PairingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ const AppNavigator = () => (
       <Stack.Screen name="Results" component={ResultsScreen} />
       <Stack.Screen name="UserHistory" component={UserHistoryScreen} />
       <Stack.Screen name="EditWine" component={EditWineScreen} />
+      <Stack.Screen name="Pairing" component={PairingScreen} />
     </Stack.Navigator>
   </NavigationContainer>
 );

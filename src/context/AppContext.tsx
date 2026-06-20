@@ -19,6 +19,23 @@ export interface Wine {
   img_url?: string;
 }
 
+export interface FoodPairing {
+  pairing_id: string;
+  wine_id: string;
+  food_type: 'cheese' | 'charcuterie' | 'dish';
+  name: string;
+  notes?: string;
+  img_url?: string;
+  source: 'user_added' | 'ai_suggested';
+}
+
+export interface PairingSuggestion {
+  food_type: 'cheese' | 'charcuterie' | 'dish';
+  name: string;
+  reason: string;
+  recipe_blurb?: string;
+}
+
 export interface SearchParams {
   winemaker?: string;
   wine_type?: string;

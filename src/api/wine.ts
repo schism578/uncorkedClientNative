@@ -1,7 +1,6 @@
 // Stub for wine API (for future use)
 import { getAuthToken } from './auth';
-
-const API_URL = 'https://thawing-anchorage-88444.herokuapp.com';
+import { API_URL } from './config';
 
 export async function searchWines(params: any): Promise<any[]> {
   // Build query string from params

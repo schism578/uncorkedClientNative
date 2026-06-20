@@ -4,9 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { postLogin, postUser, saveAuthToken } from '../api/auth';
+import { getErrorMessage } from '../api/errors';
+import { useAppContext } from '../context';
 
 const LoginScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
+  const { setUserInfo } = useAppContext();
   // State for login
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -26,9 +29,10 @@ const LoginScreen = () => {
     try {
       const res = await postLogin({ username: loginUsername, password: loginPassword });
       await saveAuthToken(res.authToken);
+      setUserInfo({ user_id: String(res.user.user_id), username: res.user.username });
       navigation.navigate('Main');
     } catch (err: any) {
-      setLoginError(err.error || 'Login failed');
+      setLoginError(getErrorMessage(err, 'Login failed'));
     }
   };
 
@@ -44,7 +48,7 @@ const LoginScreen = () => {
       setSignupUsername('');
       setSignupPassword('');
     } catch (err: any) {
-      setSignupError(err.error || 'Sign up failed');
+      setSignupError(getErrorMessage(err, 'Sign up failed'));
     }
   };
 

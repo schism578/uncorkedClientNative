@@ -5,6 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
 import { searchWines } from '../api/wine';
+import { getErrorMessage } from '../api/errors';
 
 const SearchScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Search'>>();
@@ -48,8 +49,8 @@ const SearchScreen = () => {
       setSearchResults(results);
       navigation.navigate('Results');
     } catch (err: any) {
-      setError(err.error || err.message || 'Search failed');
-      Alert.alert('Error', err.error || err.message || 'Search failed');
+      setError(getErrorMessage(err, 'Search failed'));
+      Alert.alert('Error', getErrorMessage(err, 'Search failed'));
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from './config';
 
 // React Native Auth API for uncorked-client-native
-const API_URL = 'https://thawing-anchorage-88444.herokuapp.com';
 const TOKEN_KEY = 'uncorked-client-auth-token';
 
 export async function postLogin({ username, password }: { username: string; password: string }) {

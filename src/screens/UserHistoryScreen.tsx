@@ -5,6 +5,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
 import { getAuthToken, clearAuthToken } from '../api/auth';
+import { API_URL } from '../api/config';
+import { getErrorMessage } from '../api/errors';
 
 const defaultImages: Record<string, any> = {
   red: require('../../assets/red.jpg'),
@@ -12,8 +14,6 @@ const defaultImages: Record<string, any> = {
   rose: require('../../assets/rose.jpg'),
   sparkling: require('../../assets/sparkling.jpg'),
 };
-
-const API_URL = 'https://thawing-anchorage-88444.herokuapp.com';
 
 const UserHistoryScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'UserHistory'>>();
@@ -39,7 +39,7 @@ const UserHistoryScreen = () => {
       const data = await res.json();
       setWines(data);
     } catch (err: any) {
-      setError(err.error || err.message || 'Failed to load history');
+      setError(getErrorMessage(err, 'Failed to load history'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,7 +70,7 @@ const UserHistoryScreen = () => {
       setWines(wines.filter(w => w.wine_id !== wine_id));
       Alert.alert('Deleted', 'Wine entry deleted.');
     } catch (err: any) {
-      Alert.alert('Error', err.error || err.message || 'Failed to delete wine');
+      Alert.alert('Error', getErrorMessage(err, 'Failed to delete wine'));
     }
   };
 
@@ -120,6 +120,7 @@ const UserHistoryScreen = () => {
           <Text style={styles.label}>Tasting Notes: <Text style={styles.value}>{wine.tasting_notes}</Text></Text>
           <Text style={styles.label}>Rating: <Text style={styles.value}>{wine.rating}</Text></Text>
           <View style={styles.buttonRow}>
+            <Button title="Pair It" color="#6b4226" onPress={() => navigation.navigate('Pairing', { wine })} />
             <Button title="Edit" color="#888" onPress={() => handleEdit(wine)} />
             <Button title="Delete" color="#b22222" onPress={() => handleDelete(wine.wine_id)} />
           </View>
