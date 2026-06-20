@@ -252,6 +252,32 @@ const PairingScreen = () => {
     );
   };
 
+  const renderSavedPairingRow = (p: FoodPairing) => {
+    const nearby = getNearbySearch(p.food_type, p.name);
+    const isExpanded = expandedPairingId === p.pairing_id;
+    return (
+      <View key={p.pairing_id} style={styles.linkCard}>
+        <TouchableOpacity onPress={() => setExpandedPairingId(isExpanded ? null : p.pairing_id)}>
+          <View style={styles.linkRow}>
+            <Text style={styles.badge}>{foodTypeLabels[p.food_type] || p.food_type}</Text>
+            <Text style={styles.linkTitle}>{p.name}</Text>
+          </View>
+        </TouchableOpacity>
+        {isExpanded && (
+          <View style={styles.linkDetail}>
+            {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
+            <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+            <View style={styles.buttonSpacer} />
+            <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const userAddedPairings = savedPairings.filter(p => p.source !== 'ai_suggested');
+  const aiSavedPairings = savedPairings.filter(p => p.source === 'ai_suggested');
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Pairings for {wine.wine_name}</Text>
@@ -343,31 +369,17 @@ const PairingScreen = () => {
 
       <Text style={styles.subheading}>Saved Pairings</Text>
       {loadingSaved && <ActivityIndicator size="small" color="#b22222" style={{ marginVertical: 12 }} />}
-      {!loadingSaved && savedPairings.length === 0 && (
+      {!loadingSaved && userAddedPairings.length === 0 && (
         <Text style={styles.noResults}>No saved pairings for this wine yet.</Text>
       )}
-      {savedPairings.map(p => {
-        const nearby = getNearbySearch(p.food_type, p.name);
-        const isExpanded = expandedPairingId === p.pairing_id;
-        return (
-          <View key={p.pairing_id} style={styles.linkCard}>
-            <TouchableOpacity onPress={() => setExpandedPairingId(isExpanded ? null : p.pairing_id)}>
-              <View style={styles.linkRow}>
-                <Text style={styles.badge}>{foodTypeLabels[p.food_type] || p.food_type}</Text>
-                <Text style={styles.linkTitle}>{p.name}</Text>
-              </View>
-            </TouchableOpacity>
-            {isExpanded && (
-              <View style={styles.linkDetail}>
-                {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
-                <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
-                <View style={styles.buttonSpacer} />
-                <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
-              </View>
-            )}
-          </View>
-        );
-      })}
+      {userAddedPairings.map(renderSavedPairingRow)}
+
+      <Text style={styles.subheading}>Saved for Later</Text>
+      {loadingSaved && <ActivityIndicator size="small" color="#b22222" style={{ marginVertical: 12 }} />}
+      {!loadingSaved && aiSavedPairings.length === 0 && (
+        <Text style={styles.noResults}>No pairings saved for later yet.</Text>
+      )}
+      {aiSavedPairings.map(renderSavedPairingRow)}
 
       <View style={styles.buttonSpacer} />
       <Button title="Go Back" color="#888" onPress={() => navigation.goBack()} />
