@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -10,6 +11,7 @@ import { getErrorMessage } from '../api/errors';
 import { openNearbySearch } from '../utils/maps';
 
 type PairingScreenRouteProp = RouteProp<RootStackParamList, 'Pairing'>;
+type Edits = Record<number, { name: string; notes: string }>;
 
 const foodTypeLabels: Record<string, string> = {
   cheese: 'Cheese',
@@ -30,21 +32,45 @@ function formatNotes(s: PairingSuggestion): string {
   return `${s.reason}\n\nIngredients:\n${ingredients}\n\nSteps:\n${steps}`;
 }
 
+function editsFromSuggestions(data: PairingSuggestion[]): Edits {
+  return data.reduce((acc, s, i) => {
+    acc[i] = { name: s.name, notes: formatNotes(s) };
+    return acc;
+  }, {} as Edits);
+}
+
 const PairingScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pairing'>>();
   const route = useRoute<PairingScreenRouteProp>();
   const { userInfo } = useAppContext();
   const wine = route.params?.wine;
 
+  // Generic "Get AI Suggestions" section
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<PairingSuggestion[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [edits, setEdits] = useState<Record<number, { name: string; notes: string }>>({});
+  const [edits, setEdits] = useState<Edits>({});
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
 
+  // "Record Your Own Pairing" section
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualType, setManualType] = useState('');
+  const [manualNotes, setManualNotes] = useState('');
+  const [manualSaving, setManualSaving] = useState(false);
+
+  // "Find More Pairings Like This" results
+  const [similarSuggestions, setSimilarSuggestions] = useState<PairingSuggestion[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [similarError, setSimilarError] = useState<string | null>(null);
+  const [similarEdits, setSimilarEdits] = useState<Edits>({});
+  const [similarSavingIndex, setSimilarSavingIndex] = useState<number | null>(null);
+
+  // Saved pairings
   const [savedPairings, setSavedPairings] = useState<FoodPairing[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
-
-  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [expandedPairingId, setExpandedPairingId] = useState<string | null>(null);
 
   const loadSavedPairings = useCallback(async () => {
     if (!userInfo) return;
@@ -60,55 +86,110 @@ const PairingScreen = () => {
   }, [userInfo, wine.wine_id]);
 
   useEffect(() => {
-    let isMounted = true;
+    loadSavedPairings();
+  }, [loadSavedPairings]);
+
+  const fetchSuggestions = () => {
     setLoadingSuggestions(true);
     setSuggestionError(null);
     getPairingSuggestions(wine.wine_id)
       .then(data => {
-        if (isMounted) {
-          setSuggestions(data);
-          setEdits(
-            data.reduce((acc, s, i) => {
-              acc[i] = { name: s.name, notes: formatNotes(s) };
-              return acc;
-            }, {} as Record<number, { name: string; notes: string }>)
-          );
-        }
+        setSuggestions(data);
+        setEdits(editsFromSuggestions(data));
       })
-      .catch(err => {
-        if (isMounted) setSuggestionError(getErrorMessage(err, 'Failed to load pairing suggestions'));
-      })
-      .finally(() => {
-        if (isMounted) setLoadingSuggestions(false);
-      });
-    loadSavedPairings();
-    return () => { isMounted = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .catch(err => setSuggestionError(getErrorMessage(err, 'Failed to load pairing suggestions')))
+      .finally(() => setLoadingSuggestions(false));
+  };
+
+  const handleToggleAiSuggestions = () => {
+    const opening = !showAiSuggestions;
+    setShowAiSuggestions(opening);
+    if (opening && suggestions.length === 0 && !loadingSuggestions) {
+      fetchSuggestions();
+    }
+  };
 
   const handleEditChange = (index: number, key: 'name' | 'notes', value: string) => {
     setEdits({ ...edits, [index]: { ...edits[index], [key]: value } });
   };
 
-  const handleSave = async (suggestion: PairingSuggestion, index: number) => {
+  const handleSimilarEditChange = (index: number, key: 'name' | 'notes', value: string) => {
+    setSimilarEdits({ ...similarEdits, [index]: { ...similarEdits[index], [key]: value } });
+  };
+
+  const saveSuggestionAsPairing = async (suggestion: PairingSuggestion, name: string, notes: string) => {
     if (!userInfo) return;
+    await createPairing(userInfo.user_id, {
+      wine_id: wine.wine_id,
+      food_type: suggestion.food_type,
+      name,
+      notes,
+      source: 'ai_suggested',
+    });
+    await loadSavedPairings();
+  };
+
+  const handleSaveSuggestion = async (suggestion: PairingSuggestion, index: number) => {
     const edited = edits[index] || { name: suggestion.name, notes: formatNotes(suggestion) };
     setSavingIndex(index);
     try {
-      await createPairing(userInfo.user_id, {
-        wine_id: wine.wine_id,
-        food_type: suggestion.food_type,
-        name: edited.name,
-        notes: edited.notes,
-        source: 'ai_suggested',
-      });
-      await loadSavedPairings();
+      await saveSuggestionAsPairing(suggestion, edited.name, edited.notes);
       Alert.alert('Saved', `${edited.name} added to your memories.`);
     } catch (err: any) {
       Alert.alert('Error', getErrorMessage(err, 'Failed to save pairing'));
     } finally {
       setSavingIndex(null);
     }
+  };
+
+  const handleSaveSimilar = async (suggestion: PairingSuggestion, index: number) => {
+    const edited = similarEdits[index] || { name: suggestion.name, notes: formatNotes(suggestion) };
+    setSimilarSavingIndex(index);
+    try {
+      await saveSuggestionAsPairing(suggestion, edited.name, edited.notes);
+      Alert.alert('Saved for later', `${edited.name} added to your memories.`);
+    } catch (err: any) {
+      Alert.alert('Error', getErrorMessage(err, 'Failed to save pairing'));
+    } finally {
+      setSimilarSavingIndex(null);
+    }
+  };
+
+  const handleSaveManual = async () => {
+    if (!userInfo) return;
+    if (!manualName.trim() || !manualType) {
+      Alert.alert('Missing info', 'Please enter a name and select a type.');
+      return;
+    }
+    setManualSaving(true);
+    try {
+      await createPairing(userInfo.user_id, {
+        wine_id: wine.wine_id,
+        food_type: manualType,
+        name: manualName.trim(),
+        notes: manualNotes.trim() || undefined,
+        source: 'user_added',
+      });
+      await loadSavedPairings();
+      Alert.alert('Saved', `${manualName.trim()} added to your memories.`);
+    } catch (err: any) {
+      Alert.alert('Error', getErrorMessage(err, 'Failed to save pairing'));
+    } finally {
+      setManualSaving(false);
+    }
+  };
+
+  const handleFindSimilar = () => {
+    if (!manualType) return;
+    setLoadingSimilar(true);
+    setSimilarError(null);
+    getPairingSuggestions(wine.wine_id, { food_type: manualType, seed_name: manualName.trim() || undefined, count: 5 })
+      .then(data => {
+        setSimilarSuggestions(data);
+        setSimilarEdits(editsFromSuggestions(data));
+      })
+      .catch(err => setSimilarError(getErrorMessage(err, 'Failed to load similar pairings')))
+      .finally(() => setLoadingSimilar(false));
   };
 
   const handleDelete = async (pairing_id: string) => {
@@ -121,57 +202,144 @@ const PairingScreen = () => {
     }
   };
 
+  const renderSuggestionCard = (
+    s: PairingSuggestion,
+    i: number,
+    sectionEdits: Edits,
+    onEditChange: (index: number, key: 'name' | 'notes', value: string) => void,
+    onSave: (s: PairingSuggestion, i: number) => void,
+    savingIdx: number | null,
+    saveLabel: string
+  ) => {
+    const nearby = getNearbySearch(s.food_type, s.name);
+    return (
+      <View key={`${s.name}-${i}`} style={styles.card}>
+        <Text style={styles.badge}>{foodTypeLabels[s.food_type] || s.food_type}</Text>
+        {s.recipe ? (
+          <View>
+            <Text style={styles.cardSubheading}>Ingredients</Text>
+            {s.recipe.ingredients.map((ing, idx) => (
+              <Text key={idx} style={styles.cardBody}>{`• ${ing}`}</Text>
+            ))}
+            <Text style={styles.cardSubheading}>Steps</Text>
+            {s.recipe.steps.map((step, idx) => (
+              <Text key={idx} style={styles.cardBody}>{`${idx + 1}. ${step}`}</Text>
+            ))}
+          </View>
+        ) : null}
+        <TextInput
+          style={styles.input}
+          value={sectionEdits[i]?.name ?? s.name}
+          onChangeText={v => onEditChange(i, 'name', v)}
+          placeholder="Name"
+        />
+        <TextInput
+          style={[styles.input, styles.notesInput]}
+          value={sectionEdits[i]?.notes ?? s.reason}
+          onChangeText={v => onEditChange(i, 'notes', v)}
+          placeholder="Notes"
+          multiline
+        />
+        <Button
+          title={savingIdx === i ? 'Saving...' : saveLabel}
+          color="#b22222"
+          onPress={() => onSave(s, i)}
+          disabled={savingIdx !== null}
+        />
+        <View style={styles.buttonSpacer} />
+        <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+      </View>
+    );
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Pairings for {wine.wine_name}</Text>
 
-      <Text style={styles.subheading}>AI Suggestions</Text>
-      {loadingSuggestions && <ActivityIndicator size="large" color="#b22222" style={{ marginVertical: 24 }} />}
-      {suggestionError && <Text style={styles.error}>{suggestionError}</Text>}
-      {!loadingSuggestions && !suggestionError && suggestions.length === 0 && (
-        <Text style={styles.noResults}>No suggestions available right now.</Text>
+      <Button
+        title={showAiSuggestions ? 'Hide AI Suggestions' : 'Get AI Suggestions'}
+        color="#b22222"
+        onPress={handleToggleAiSuggestions}
+      />
+      <View style={styles.buttonSpacer} />
+      <Button
+        title={showManualForm ? 'Hide Record Your Own' : 'Record Your Own Pairing'}
+        color="#6b4226"
+        onPress={() => setShowManualForm(!showManualForm)}
+      />
+
+      {showAiSuggestions && (
+        <View style={styles.section}>
+          <Text style={styles.subheading}>AI Suggestions</Text>
+          {loadingSuggestions && <ActivityIndicator size="large" color="#b22222" style={{ marginVertical: 24 }} />}
+          {suggestionError && <Text style={styles.error}>{suggestionError}</Text>}
+          {!loadingSuggestions && !suggestionError && suggestions.length === 0 && (
+            <Text style={styles.noResults}>No suggestions available right now.</Text>
+          )}
+          {suggestions.map((s, i) =>
+            renderSuggestionCard(s, i, edits, handleEditChange, handleSaveSuggestion, savingIndex, 'Save to my memories')
+          )}
+        </View>
       )}
-      {suggestions.map((s, i) => {
-        const nearby = getNearbySearch(s.food_type, s.name);
-        return (
-          <View key={`${s.name}-${i}`} style={styles.card}>
-            <Text style={styles.badge}>{foodTypeLabels[s.food_type] || s.food_type}</Text>
-            {s.recipe ? (
-              <View>
-                <Text style={styles.cardSubheading}>Ingredients</Text>
-                {s.recipe.ingredients.map((ing, idx) => (
-                  <Text key={idx} style={styles.cardBody}>{`• ${ing}`}</Text>
-                ))}
-                <Text style={styles.cardSubheading}>Steps</Text>
-                {s.recipe.steps.map((step, idx) => (
-                  <Text key={idx} style={styles.cardBody}>{`${idx + 1}. ${step}`}</Text>
-                ))}
-              </View>
-            ) : null}
+
+      {showManualForm && (
+        <View style={styles.section}>
+          <Text style={styles.subheading}>Record Your Own Pairing</Text>
+          <View style={styles.card}>
             <TextInput
               style={styles.input}
-              value={edits[i]?.name ?? s.name}
-              onChangeText={v => handleEditChange(i, 'name', v)}
               placeholder="Name"
+              value={manualName}
+              onChangeText={setManualName}
             />
+            <Picker
+              selectedValue={manualType}
+              style={styles.input}
+              onValueChange={setManualType}
+            >
+              <Picker.Item label="Choose a type" value="" />
+              <Picker.Item label="Cheese" value="cheese" />
+              <Picker.Item label="Charcuterie" value="charcuterie" />
+              <Picker.Item label="Dish" value="dish" />
+            </Picker>
             <TextInput
               style={[styles.input, styles.notesInput]}
-              value={edits[i]?.notes ?? s.reason}
-              onChangeText={v => handleEditChange(i, 'notes', v)}
-              placeholder="Notes"
+              placeholder="Pairing Notes"
+              value={manualNotes}
+              onChangeText={setManualNotes}
               multiline
             />
             <Button
-              title={savingIndex === i ? 'Saving...' : 'Save to my memories'}
+              title={manualSaving ? 'Saving...' : 'Save'}
               color="#b22222"
-              onPress={() => handleSave(s, i)}
-              disabled={savingIndex !== null}
+              onPress={handleSaveManual}
+              disabled={manualSaving}
             />
-            <View style={styles.buttonSpacer} />
-            <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+            {!!manualType && (
+              <>
+                <View style={styles.buttonSpacer} />
+                <Button
+                  title={loadingSimilar ? 'Finding...' : 'Find More Pairings Like This'}
+                  color="#6b4226"
+                  onPress={handleFindSimilar}
+                  disabled={loadingSimilar}
+                />
+              </>
+            )}
           </View>
-        );
-      })}
+
+          {(loadingSimilar || similarError || similarSuggestions.length > 0) && (
+            <View>
+              <Text style={styles.subheading}>More Like This</Text>
+              {loadingSimilar && <ActivityIndicator size="large" color="#b22222" style={{ marginVertical: 24 }} />}
+              {similarError && <Text style={styles.error}>{similarError}</Text>}
+              {similarSuggestions.map((s, i) =>
+                renderSuggestionCard(s, i, similarEdits, handleSimilarEditChange, handleSaveSimilar, similarSavingIndex, 'Save for Later')
+              )}
+            </View>
+          )}
+        </View>
+      )}
 
       <Text style={styles.subheading}>Saved Pairings</Text>
       {loadingSaved && <ActivityIndicator size="small" color="#b22222" style={{ marginVertical: 12 }} />}
@@ -180,18 +348,28 @@ const PairingScreen = () => {
       )}
       {savedPairings.map(p => {
         const nearby = getNearbySearch(p.food_type, p.name);
+        const isExpanded = expandedPairingId === p.pairing_id;
         return (
-          <View key={p.pairing_id} style={styles.card}>
-            <Text style={styles.badge}>{foodTypeLabels[p.food_type] || p.food_type}</Text>
-            <Text style={styles.cardTitle}>{p.name}</Text>
-            {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
-            <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
-            <View style={styles.buttonSpacer} />
-            <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
+          <View key={p.pairing_id} style={styles.linkCard}>
+            <TouchableOpacity onPress={() => setExpandedPairingId(isExpanded ? null : p.pairing_id)}>
+              <View style={styles.linkRow}>
+                <Text style={styles.badge}>{foodTypeLabels[p.food_type] || p.food_type}</Text>
+                <Text style={styles.linkTitle}>{p.name}</Text>
+              </View>
+            </TouchableOpacity>
+            {isExpanded && (
+              <View style={styles.linkDetail}>
+                {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
+                <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+                <View style={styles.buttonSpacer} />
+                <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
+              </View>
+            )}
           </View>
         );
       })}
 
+      <View style={styles.buttonSpacer} />
       <Button title="Go Back" color="#888" onPress={() => navigation.goBack()} />
     </ScrollView>
   );
@@ -210,6 +388,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#b22222',
     textAlign: 'center',
+  },
+  section: {
+    width: '100%',
+    alignItems: 'center',
   },
   subheading: {
     fontSize: 18,
@@ -231,17 +413,34 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  linkCard: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  linkTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#b22222',
+    textDecorationLine: 'underline',
+  },
+  linkDetail: {
+    marginTop: 12,
+  },
   badge: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#b22222',
     textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
     marginBottom: 4,
   },
   cardBody: {

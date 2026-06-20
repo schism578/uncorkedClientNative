@@ -10,10 +10,14 @@ async function authHeaders() {
   };
 }
 
-export async function getPairingSuggestions(wine_id: string): Promise<PairingSuggestion[]> {
+export async function getPairingSuggestions(
+  wine_id: string,
+  options?: { food_type?: string; seed_name?: string; count?: number }
+): Promise<PairingSuggestion[]> {
   const res = await fetch(`${API_URL}/pairing/${wine_id}/suggest`, {
     method: 'POST',
     headers: await authHeaders(),
+    body: options ? JSON.stringify(options) : undefined,
   });
   if (!res.ok) throw await res.json();
   return res.json();
