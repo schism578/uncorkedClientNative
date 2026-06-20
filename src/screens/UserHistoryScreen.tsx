@@ -126,6 +126,7 @@ const UserHistoryScreen = () => {
           </View>
         </View>
       ))}
+      <AppButton title="Search Your Wines" variant="secondary" onPress={() => navigation.navigate('Search')} />
       <AppButton title="Go Back" variant="primary" onPress={() => navigation.navigate('Main')} />
       <AppButton title="Logout" variant="muted" onPress={handleLogout} />
     </Screen>

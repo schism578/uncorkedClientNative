@@ -79,7 +79,7 @@ const SearchScreen = () => {
       <TextInput style={styles.input} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes || ''} onChangeText={v => handleChange('tasting_notes', v)} />
       <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={form.rating || ''} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
       <AppButton title="Search" variant="primary" onPress={handleSubmit} loading={loading} />
-      <AppButton title="Cancel" variant="muted" onPress={() => navigation.navigate('Main')} />
+      <AppButton title="Cancel" variant="muted" onPress={() => navigation.goBack()} />
     </Screen>
   );
 };

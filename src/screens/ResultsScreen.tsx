@@ -53,7 +53,7 @@ const ResultsScreen = () => {
           </View>
         ))
       )}
-      <AppButton title="Go Back" variant="primary" onPress={() => navigation.navigate('Search')} />
+      <AppButton title="Go Back" variant="primary" onPress={() => navigation.goBack()} />
     </Screen>
   );
 };
