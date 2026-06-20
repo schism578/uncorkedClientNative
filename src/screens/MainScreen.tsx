@@ -185,6 +185,7 @@ const MainScreen = () => {
         onChangeText={v => handleChange('img_url', v)}
       />
       <AppButton title="Submit" variant="primary" onPress={handleSubmit} loading={loading} />
+      <AppButton title="Cancel" variant="muted" onPress={() => navigation.navigate('Dashboard')} />
       <AppButton title="Logout" variant="muted" onPress={handleLogout} />
     </Screen>
   );

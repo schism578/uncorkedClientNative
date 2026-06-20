@@ -13,6 +13,7 @@ import { colors, spacing } from '../theme';
 export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
+  Dashboard: undefined;
   Main: undefined;
   Search: undefined;
   Results: undefined;
@@ -32,7 +33,7 @@ const HomeScreen = () => {
       try {
         const user = await getCurrentUser();
         setUserInfo(user);
-        navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+        navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
       } catch {
         await clearAuthToken();
       }

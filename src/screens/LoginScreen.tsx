@@ -33,7 +33,7 @@ const LoginScreen = () => {
       const res = await postLogin({ username: loginUsername, password: loginPassword });
       await saveAuthToken(res.authToken);
       setUserInfo({ user_id: String(res.user.user_id), username: res.user.username });
-      navigation.navigate('Main');
+      navigation.navigate('Dashboard');
     } catch (err: any) {
       setLoginError(getErrorMessage(err, 'Login failed'));
     }
