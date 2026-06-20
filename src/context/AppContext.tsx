@@ -33,7 +33,7 @@ export interface PairingSuggestion {
   food_type: 'cheese' | 'charcuterie' | 'dish';
   name: string;
   reason: string;
-  recipe_blurb?: string;
+  recipe?: { ingredients: string[]; steps: string[] };
 }
 
 export interface SearchParams {

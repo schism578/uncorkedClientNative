@@ -7,6 +7,7 @@ import { useAppContext } from '../context';
 import type { FoodPairing, PairingSuggestion } from '../context';
 import { getPairingSuggestions, getPairingsForWine, createPairing, deletePairing } from '../api/pairing';
 import { getErrorMessage } from '../api/errors';
+import { openNearbySearch } from '../utils/maps';
 
 type PairingScreenRouteProp = RouteProp<RootStackParamList, 'Pairing'>;
 
@@ -15,6 +16,19 @@ const foodTypeLabels: Record<string, string> = {
   charcuterie: 'Charcuterie',
   dish: 'Dish',
 };
+
+function getNearbySearch(foodType: string, name: string): { label: string; query: string } {
+  if (foodType === 'cheese') return { label: 'Find Nearby', query: `${name} cheese shop` };
+  if (foodType === 'charcuterie') return { label: 'Find Nearby', query: `${name} butcher` };
+  return { label: 'Find Ingredients Nearby', query: 'grocery store' };
+}
+
+function formatNotes(s: PairingSuggestion): string {
+  if (!s.recipe) return s.reason;
+  const ingredients = s.recipe.ingredients.map(i => `- ${i}`).join('\n');
+  const steps = s.recipe.steps.map((step, i) => `${i + 1}. ${step}`).join('\n');
+  return `${s.reason}\n\nIngredients:\n${ingredients}\n\nSteps:\n${steps}`;
+}
 
 const PairingScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pairing'>>();
@@ -55,7 +69,7 @@ const PairingScreen = () => {
           setSuggestions(data);
           setEdits(
             data.reduce((acc, s, i) => {
-              acc[i] = { name: s.name, notes: s.reason };
+              acc[i] = { name: s.name, notes: formatNotes(s) };
               return acc;
             }, {} as Record<number, { name: string; notes: string }>)
           );
@@ -78,7 +92,7 @@ const PairingScreen = () => {
 
   const handleSave = async (suggestion: PairingSuggestion, index: number) => {
     if (!userInfo) return;
-    const edited = edits[index] || { name: suggestion.name, notes: suggestion.reason };
+    const edited = edits[index] || { name: suggestion.name, notes: formatNotes(suggestion) };
     setSavingIndex(index);
     try {
       await createPairing(userInfo.user_id, {
@@ -117,45 +131,66 @@ const PairingScreen = () => {
       {!loadingSuggestions && !suggestionError && suggestions.length === 0 && (
         <Text style={styles.noResults}>No suggestions available right now.</Text>
       )}
-      {suggestions.map((s, i) => (
-        <View key={`${s.name}-${i}`} style={styles.card}>
-          <Text style={styles.badge}>{foodTypeLabels[s.food_type] || s.food_type}</Text>
-          {s.recipe_blurb ? <Text style={styles.cardBody}>{s.recipe_blurb}</Text> : null}
-          <TextInput
-            style={styles.input}
-            value={edits[i]?.name ?? s.name}
-            onChangeText={v => handleEditChange(i, 'name', v)}
-            placeholder="Name"
-          />
-          <TextInput
-            style={[styles.input, styles.notesInput]}
-            value={edits[i]?.notes ?? s.reason}
-            onChangeText={v => handleEditChange(i, 'notes', v)}
-            placeholder="Notes"
-            multiline
-          />
-          <Button
-            title={savingIndex === i ? 'Saving...' : 'Save to my memories'}
-            color="#b22222"
-            onPress={() => handleSave(s, i)}
-            disabled={savingIndex !== null}
-          />
-        </View>
-      ))}
+      {suggestions.map((s, i) => {
+        const nearby = getNearbySearch(s.food_type, s.name);
+        return (
+          <View key={`${s.name}-${i}`} style={styles.card}>
+            <Text style={styles.badge}>{foodTypeLabels[s.food_type] || s.food_type}</Text>
+            {s.recipe ? (
+              <View>
+                <Text style={styles.cardSubheading}>Ingredients</Text>
+                {s.recipe.ingredients.map((ing, idx) => (
+                  <Text key={idx} style={styles.cardBody}>{`• ${ing}`}</Text>
+                ))}
+                <Text style={styles.cardSubheading}>Steps</Text>
+                {s.recipe.steps.map((step, idx) => (
+                  <Text key={idx} style={styles.cardBody}>{`${idx + 1}. ${step}`}</Text>
+                ))}
+              </View>
+            ) : null}
+            <TextInput
+              style={styles.input}
+              value={edits[i]?.name ?? s.name}
+              onChangeText={v => handleEditChange(i, 'name', v)}
+              placeholder="Name"
+            />
+            <TextInput
+              style={[styles.input, styles.notesInput]}
+              value={edits[i]?.notes ?? s.reason}
+              onChangeText={v => handleEditChange(i, 'notes', v)}
+              placeholder="Notes"
+              multiline
+            />
+            <Button
+              title={savingIndex === i ? 'Saving...' : 'Save to my memories'}
+              color="#b22222"
+              onPress={() => handleSave(s, i)}
+              disabled={savingIndex !== null}
+            />
+            <View style={styles.buttonSpacer} />
+            <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+          </View>
+        );
+      })}
 
       <Text style={styles.subheading}>Saved Pairings</Text>
       {loadingSaved && <ActivityIndicator size="small" color="#b22222" style={{ marginVertical: 12 }} />}
       {!loadingSaved && savedPairings.length === 0 && (
         <Text style={styles.noResults}>No saved pairings for this wine yet.</Text>
       )}
-      {savedPairings.map(p => (
-        <View key={p.pairing_id} style={styles.card}>
-          <Text style={styles.badge}>{foodTypeLabels[p.food_type] || p.food_type}</Text>
-          <Text style={styles.cardTitle}>{p.name}</Text>
-          {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
-          <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
-        </View>
-      ))}
+      {savedPairings.map(p => {
+        const nearby = getNearbySearch(p.food_type, p.name);
+        return (
+          <View key={p.pairing_id} style={styles.card}>
+            <Text style={styles.badge}>{foodTypeLabels[p.food_type] || p.food_type}</Text>
+            <Text style={styles.cardTitle}>{p.name}</Text>
+            {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
+            <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+            <View style={styles.buttonSpacer} />
+            <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
+          </View>
+        );
+      })}
 
       <Button title="Go Back" color="#888" onPress={() => navigation.goBack()} />
     </ScrollView>
@@ -213,6 +248,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#444',
     marginBottom: 8,
+  },
+  cardSubheading: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  buttonSpacer: {
+    height: 8,
   },
   input: {
     width: '100%',
