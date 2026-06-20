@@ -24,6 +24,17 @@ export async function postUser(user: { username: string; password: string }) {
   return res.json();
 }
 
+export async function getCurrentUser(): Promise<{ user_id: string; username: string }> {
+  const token = await getAuthToken();
+  const res = await fetch(`${API_URL}/user`, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!res.ok) throw await res.json();
+  const user = await res.json();
+  return { user_id: String(user.user_id), username: user.username };
+}
+
 export async function saveAuthToken(token: string) {
   await AsyncStorage.setItem(TOKEN_KEY, token);
 }

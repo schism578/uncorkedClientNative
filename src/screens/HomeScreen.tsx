@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { getAuthToken, clearAuthToken } from '../api/auth';
+import { getAuthToken, clearAuthToken, getCurrentUser } from '../api/auth';
 import { useAppContext } from '../context';
 import type { Wine } from '../context';
 
@@ -25,11 +25,16 @@ const HomeScreen = () => {
   useEffect(() => {
     (async () => {
       const token = await getAuthToken();
-      if (token) {
+      if (!token) return;
+      try {
+        const user = await getCurrentUser();
+        setUserInfo(user);
         navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      } catch {
+        await clearAuthToken();
       }
     })();
-  }, [navigation]);
+  }, [navigation, setUserInfo]);
 
   const handleLogout = async () => {
     await clearAuthToken();
