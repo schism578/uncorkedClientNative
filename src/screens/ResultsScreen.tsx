@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, Text, Image, Button, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { colors, spacing, card } from '../theme';
 
 const defaultImages: Record<string, any> = {
   red: require('../../assets/red.jpg'),
@@ -31,7 +34,7 @@ const ResultsScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Screen>
       <Text style={styles.heading}>Results</Text>
       {searchResults.length === 0 ? (
         <Text style={styles.noResults}>No wines match that search.</Text>
@@ -50,57 +53,42 @@ const ResultsScreen = () => {
           </View>
         ))
       )}
-      <Button title="Go Back" color="#b22222" onPress={() => navigation.navigate('Search')} />
-    </ScrollView>
+      <AppButton title="Go Back" variant="primary" onPress={() => navigation.navigate('Search')} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#b22222',
+    marginBottom: spacing.lg,
+    color: colors.primary,
     textAlign: 'center',
   },
   wineItem: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
+    ...card,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   image: {
     width: 130,
     height: 160,
     borderRadius: 8,
-    marginBottom: 12,
-    backgroundColor: '#eee',
+    marginBottom: spacing.sm,
+    backgroundColor: colors.border,
   },
   label: {
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.textDark,
   },
   value: {
     fontWeight: 'normal',
-    color: '#444',
+    color: colors.textBody,
   },
   noResults: {
     fontSize: 18,
-    color: '#888',
-    marginVertical: 32,
+    color: colors.muted,
+    marginVertical: spacing.xl,
     textAlign: 'center',
   },
 });

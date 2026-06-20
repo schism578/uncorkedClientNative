@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -9,6 +8,11 @@ import type { FoodPairing, PairingSuggestion } from '../context';
 import { getPairingSuggestions, getPairingsForWine, createPairing, deletePairing } from '../api/pairing';
 import { getErrorMessage } from '../api/errors';
 import { openNearbySearch } from '../utils/maps';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { Dropdown } from '../components/Dropdown';
+import { FOOD_TYPE_OPTIONS } from '../constants';
+import { colors, spacing, radius, card, input as inputStyle } from '../theme';
 
 type PairingScreenRouteProp = RouteProp<RootStackParamList, 'Pairing'>;
 type Edits = Record<number, { name: string; notes: string }>;
@@ -232,22 +236,25 @@ const PairingScreen = () => {
           value={sectionEdits[i]?.name ?? s.name}
           onChangeText={v => onEditChange(i, 'name', v)}
           placeholder="Name"
+          placeholderTextColor={colors.placeholder}
         />
         <TextInput
           style={[styles.input, styles.notesInput]}
           value={sectionEdits[i]?.notes ?? s.reason}
           onChangeText={v => onEditChange(i, 'notes', v)}
           placeholder="Notes"
+          placeholderTextColor={colors.placeholder}
           multiline
         />
-        <Button
-          title={savingIdx === i ? 'Saving...' : saveLabel}
-          color="#b22222"
+        <AppButton
+          title={saveLabel}
+          variant="primary"
           onPress={() => onSave(s, i)}
-          disabled={savingIdx !== null}
+          loading={savingIdx === i}
+          disabled={savingIdx !== null && savingIdx !== i}
         />
         <View style={styles.buttonSpacer} />
-        <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+        <AppButton title={nearby.label} variant="secondary" onPress={() => openNearbySearch(nearby.query)} />
       </View>
     );
   };
@@ -266,9 +273,9 @@ const PairingScreen = () => {
         {isExpanded && (
           <View style={styles.linkDetail}>
             {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
-            <Button title={nearby.label} color="#6b4226" onPress={() => openNearbySearch(nearby.query)} />
+            <AppButton title={nearby.label} variant="secondary" onPress={() => openNearbySearch(nearby.query)} />
             <View style={styles.buttonSpacer} />
-            <Button title="Delete" color="#888" onPress={() => handleDelete(p.pairing_id)} />
+            <AppButton title="Delete" variant="danger" onPress={() => handleDelete(p.pairing_id)} />
           </View>
         )}
       </View>
@@ -279,25 +286,25 @@ const PairingScreen = () => {
   const aiSavedPairings = savedPairings.filter(p => p.source === 'ai_suggested');
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Screen>
       <Text style={styles.heading}>Pairings for {wine.wine_name}</Text>
 
-      <Button
+      <AppButton
         title={showAiSuggestions ? 'Hide AI Suggestions' : 'Get AI Suggestions'}
-        color="#b22222"
+        variant="primary"
         onPress={handleToggleAiSuggestions}
       />
       <View style={styles.buttonSpacer} />
-      <Button
+      <AppButton
         title={showManualForm ? 'Hide Record Your Own' : 'Record Your Own Pairing'}
-        color="#6b4226"
+        variant="secondary"
         onPress={() => setShowManualForm(!showManualForm)}
       />
 
       {showAiSuggestions && (
         <View style={styles.section}>
           <Text style={styles.subheading}>AI Suggestions</Text>
-          {loadingSuggestions && <ActivityIndicator size="large" color="#b22222" style={{ marginVertical: 24 }} />}
+          {loadingSuggestions && <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: spacing.xl }} />}
           {suggestionError && <Text style={styles.error}>{suggestionError}</Text>}
           {!loadingSuggestions && !suggestionError && suggestions.length === 0 && (
             <Text style={styles.noResults}>No suggestions available right now.</Text>
@@ -315,40 +322,38 @@ const PairingScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="Name"
+              placeholderTextColor={colors.placeholder}
               value={manualName}
               onChangeText={setManualName}
             />
-            <Picker
-              selectedValue={manualType}
-              style={styles.input}
-              onValueChange={setManualType}
-            >
-              <Picker.Item label="Choose a type" value="" />
-              <Picker.Item label="Cheese" value="cheese" />
-              <Picker.Item label="Charcuterie" value="charcuterie" />
-              <Picker.Item label="Dish" value="dish" />
-            </Picker>
+            <Dropdown
+              placeholder="Choose a type"
+              value={manualType}
+              options={FOOD_TYPE_OPTIONS}
+              onChange={setManualType}
+            />
             <TextInput
               style={[styles.input, styles.notesInput]}
               placeholder="Pairing Notes"
+              placeholderTextColor={colors.placeholder}
               value={manualNotes}
               onChangeText={setManualNotes}
               multiline
             />
-            <Button
-              title={manualSaving ? 'Saving...' : 'Save'}
-              color="#b22222"
+            <AppButton
+              title="Save"
+              variant="primary"
               onPress={handleSaveManual}
-              disabled={manualSaving}
+              loading={manualSaving}
             />
             {!!manualType && (
               <>
                 <View style={styles.buttonSpacer} />
-                <Button
-                  title={loadingSimilar ? 'Finding...' : 'Find More Pairings Like This'}
-                  color="#6b4226"
+                <AppButton
+                  title="Find More Pairings Like This"
+                  variant="secondary"
                   onPress={handleFindSimilar}
-                  disabled={loadingSimilar}
+                  loading={loadingSimilar}
                 />
               </>
             )}
@@ -357,7 +362,7 @@ const PairingScreen = () => {
           {(loadingSimilar || similarError || similarSuggestions.length > 0) && (
             <View>
               <Text style={styles.subheading}>More Like This</Text>
-              {loadingSimilar && <ActivityIndicator size="large" color="#b22222" style={{ marginVertical: 24 }} />}
+              {loadingSimilar && <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: spacing.xl }} />}
               {similarError && <Text style={styles.error}>{similarError}</Text>}
               {similarSuggestions.map((s, i) =>
                 renderSuggestionCard(s, i, similarEdits, handleSimilarEditChange, handleSaveSimilar, similarSavingIndex, 'Save for Later')
@@ -368,37 +373,31 @@ const PairingScreen = () => {
       )}
 
       <Text style={styles.subheading}>Saved Pairings</Text>
-      {loadingSaved && <ActivityIndicator size="small" color="#b22222" style={{ marginVertical: 12 }} />}
+      {loadingSaved && <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: spacing.sm }} />}
       {!loadingSaved && userAddedPairings.length === 0 && (
         <Text style={styles.noResults}>No saved pairings for this wine yet.</Text>
       )}
       {userAddedPairings.map(renderSavedPairingRow)}
 
       <Text style={styles.subheading}>Saved for Later</Text>
-      {loadingSaved && <ActivityIndicator size="small" color="#b22222" style={{ marginVertical: 12 }} />}
+      {loadingSaved && <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: spacing.sm }} />}
       {!loadingSaved && aiSavedPairings.length === 0 && (
         <Text style={styles.noResults}>No pairings saved for later yet.</Text>
       )}
       {aiSavedPairings.map(renderSavedPairingRow)}
 
       <View style={styles.buttonSpacer} />
-      <Button title="Go Back" color="#888" onPress={() => navigation.goBack()} />
-    </ScrollView>
+      <AppButton title="Go Back" variant="muted" onPress={() => navigation.goBack()} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#b22222',
+    marginBottom: spacing.md,
+    color: colors.primary,
     textAlign: 'center',
   },
   section: {
@@ -408,93 +407,79 @@ const styles = StyleSheet.create({
   subheading: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.textDark,
     alignSelf: 'flex-start',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
   },
   card: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...card,
   },
   linkCard: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.sm,
   },
   linkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   linkTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#b22222',
+    color: colors.primary,
     textDecorationLine: 'underline',
   },
   linkDetail: {
-    marginTop: 12,
+    marginTop: spacing.sm,
   },
   badge: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#b22222',
+    color: colors.primary,
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   cardBody: {
     fontSize: 14,
-    color: '#444',
-    marginBottom: 8,
+    color: colors.textBody,
+    marginBottom: spacing.sm,
   },
   cardSubheading: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#333',
-    marginTop: 4,
-    marginBottom: 4,
+    color: colors.textDark,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
   },
   buttonSpacer: {
-    height: 8,
+    height: spacing.sm,
   },
   input: {
-    width: '100%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 4,
-    marginBottom: 8,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    backgroundColor: '#fff',
+    ...inputStyle,
+    minHeight: 44,
   },
   notesInput: {
-    height: 60,
+    minHeight: 60,
     textAlignVertical: 'top',
-    paddingTop: 8,
+    paddingTop: spacing.sm,
   },
   noResults: {
     fontSize: 16,
-    color: '#888',
-    marginVertical: 16,
+    color: colors.muted,
+    marginVertical: spacing.md,
     textAlign: 'center',
   },
   error: {
-    color: 'red',
-    marginBottom: 8,
+    color: colors.error,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
 });

@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
 import { searchWines } from '../api/wine';
 import { getErrorMessage } from '../api/errors';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { Dropdown } from '../components/Dropdown';
+import { WINE_TYPE_OPTIONS } from '../constants';
+import { colors, spacing, input as inputStyle } from '../theme';
 
 const SearchScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Search'>>();
@@ -57,53 +62,43 @@ const SearchScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Screen>
       <Text style={styles.heading}>Search Wines</Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      <TextInput style={styles.input} placeholder="Wine Type" value={form.wine_type || ''} onChangeText={v => handleChange('wine_type', v)} />
-      <TextInput style={styles.input} placeholder="Winemaker" value={form.winemaker || ''} onChangeText={v => handleChange('winemaker', v)} />
-      <TextInput style={styles.input} placeholder="Wine Name" value={form.wine_name || ''} onChangeText={v => handleChange('wine_name', v)} />
-      <TextInput style={styles.input} placeholder="Grape Varietals" value={form.varietal || ''} onChangeText={v => handleChange('varietal', v)} />
-      <TextInput style={styles.input} placeholder="Region" value={form.region || ''} onChangeText={v => handleChange('region', v)} />
-      <TextInput style={styles.input} placeholder="Vintage" value={form.vintage || ''} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Tasting Notes" value={form.tasting_notes || ''} onChangeText={v => handleChange('tasting_notes', v)} />
-      <TextInput style={styles.input} placeholder="Rating (1-5)" value={form.rating || ''} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
-      <Button title={loading ? 'Searching...' : 'Search'} color="#b22222" onPress={handleSubmit} disabled={loading} />
-      <Button title="Cancel" color="#888" onPress={() => navigation.navigate('Main')} />
-    </ScrollView>
+      <Dropdown
+        placeholder="Wine Type (any)"
+        value={form.wine_type || ''}
+        options={[{ label: 'Any', value: '' }, ...WINE_TYPE_OPTIONS]}
+        onChange={v => handleChange('wine_type', v)}
+      />
+      <TextInput style={styles.input} placeholder="Winemaker" placeholderTextColor={colors.placeholder} value={form.winemaker || ''} onChangeText={v => handleChange('winemaker', v)} />
+      <TextInput style={styles.input} placeholder="Wine Name" placeholderTextColor={colors.placeholder} value={form.wine_name || ''} onChangeText={v => handleChange('wine_name', v)} />
+      <TextInput style={styles.input} placeholder="Grape Varietals" placeholderTextColor={colors.placeholder} value={form.varietal || ''} onChangeText={v => handleChange('varietal', v)} />
+      <TextInput style={styles.input} placeholder="Region" placeholderTextColor={colors.placeholder} value={form.region || ''} onChangeText={v => handleChange('region', v)} />
+      <TextInput style={styles.input} placeholder="Vintage" placeholderTextColor={colors.placeholder} value={form.vintage || ''} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes || ''} onChangeText={v => handleChange('tasting_notes', v)} />
+      <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={form.rating || ''} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
+      <AppButton title="Search" variant="primary" onPress={handleSubmit} loading={loading} />
+      <AppButton title="Cancel" variant="muted" onPress={() => navigation.navigate('Main')} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#b22222',
+    marginBottom: spacing.lg,
+    color: colors.primary,
     textAlign: 'center',
   },
   input: {
-    width: '100%',
+    ...inputStyle,
     maxWidth: 400,
-    height: 44,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 4,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
   },
   error: {
-    color: 'red',
-    marginBottom: 8,
+    color: colors.error,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
 });

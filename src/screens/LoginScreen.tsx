@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { postLogin, postUser, saveAuthToken } from '../api/auth';
 import { getErrorMessage } from '../api/errors';
 import { useAppContext } from '../context';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { colors, spacing, radius, input as inputStyle } from '../theme';
 
 const LoginScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Login'>>();
@@ -53,13 +56,14 @@ const LoginScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Screen>
       <View style={styles.formSection}>
         <Text style={styles.legend}>Create Profile</Text>
         {signupError ? <Text style={styles.error}>{signupError}</Text> : null}
         <TextInput
           style={styles.input}
           placeholder="Username"
+          placeholderTextColor={colors.placeholder}
           value={signupUsername}
           onChangeText={setSignupUsername}
           autoCapitalize="none"
@@ -67,11 +71,12 @@ const LoginScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="Password"
+          placeholderTextColor={colors.placeholder}
           value={signupPassword}
           onChangeText={setSignupPassword}
           secureTextEntry
         />
-        <Button title="Sign Up" color="#b22222" onPress={handleSignup} />
+        <AppButton title="Sign Up" variant="primary" onPress={handleSignup} />
       </View>
       <View style={styles.formSection}>
         <Text style={styles.legend}>Log In</Text>
@@ -79,6 +84,7 @@ const LoginScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="Username"
+          placeholderTextColor={colors.placeholder}
           value={loginUsername}
           onChangeText={setLoginUsername}
           autoCapitalize="none"
@@ -86,53 +92,41 @@ const LoginScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="Password"
+          placeholderTextColor={colors.placeholder}
           value={loginPassword}
           onChangeText={setLoginPassword}
           secureTextEntry
         />
-        <Button title="Login" color="#b22222" onPress={handleLogin} />
+        <AppButton title="Login" variant="primary" onPress={handleLogin} />
       </View>
-    </ScrollView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   formSection: {
     width: '100%',
     maxWidth: 400,
-    marginBottom: 40,
-    padding: 16,
-    backgroundColor: 'rgba(178,34,34,0.05)',
-    borderRadius: 8,
+    marginBottom: spacing.xl,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
   },
   legend: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#b22222',
+    marginBottom: spacing.md,
+    color: colors.primary,
   },
   input: {
-    width: '100%',
-    height: 44,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 4,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
+    ...inputStyle,
   },
   error: {
-    color: 'red',
-    marginBottom: 8,
+    color: colors.error,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
 });

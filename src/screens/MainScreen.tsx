@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -9,6 +8,11 @@ import { useAppContext } from '../context';
 import { fetchWineImage } from '../api/wine';
 import { API_URL } from '../api/config';
 import { getErrorMessage } from '../api/errors';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { Dropdown } from '../components/Dropdown';
+import { WINE_TYPE_OPTIONS } from '../constants';
+import { colors, spacing, input as inputStyle } from '../theme';
 
 const MainScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
@@ -113,41 +117,40 @@ const MainScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Screen>
       <Text style={styles.heading}>Add a New Wine</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <TextInput
         style={styles.input}
         placeholder="Winemaker (required)"
+        placeholderTextColor={colors.placeholder}
         value={form.winemaker}
         onChangeText={v => handleChange('winemaker', v)}
       />
-      <Picker
-        selectedValue={form.wine_type}
-        style={styles.input}
-        onValueChange={(v: string) => handleChange('wine_type', v)}
-      >
-        <Picker.Item label="Choose a wine type (required)" value="" />
-        <Picker.Item label="Sparkling" value="sparkling" />
-        <Picker.Item label="White" value="white" />
-        <Picker.Item label="Rose" value="rose" />
-        <Picker.Item label="Red" value="red" />
-      </Picker>
+      <Dropdown
+        placeholder="Choose a wine type (required)"
+        value={form.wine_type}
+        options={WINE_TYPE_OPTIONS}
+        onChange={v => handleChange('wine_type', v)}
+      />
       <TextInput
         style={styles.input}
         placeholder="Wine Name"
+        placeholderTextColor={colors.placeholder}
         value={form.wine_name}
         onChangeText={v => handleChange('wine_name', v)}
       />
       <TextInput
         style={styles.input}
         placeholder="Grape Varietals"
+        placeholderTextColor={colors.placeholder}
         value={form.varietal}
         onChangeText={v => handleChange('varietal', v)}
       />
       <TextInput
         style={styles.input}
         placeholder="Vintage (enter 0 if non-vintage)"
+        placeholderTextColor={colors.placeholder}
         value={form.vintage}
         onChangeText={v => handleChange('vintage', v)}
         keyboardType="numeric"
@@ -155,18 +158,21 @@ const MainScreen = () => {
       <TextInput
         style={styles.input}
         placeholder="Region"
+        placeholderTextColor={colors.placeholder}
         value={form.region}
         onChangeText={v => handleChange('region', v)}
       />
       <TextInput
         style={styles.input}
         placeholder="Tasting Notes"
+        placeholderTextColor={colors.placeholder}
         value={form.tasting_notes}
         onChangeText={v => handleChange('tasting_notes', v)}
       />
       <TextInput
         style={styles.input}
         placeholder="Rate your wine: 1-5"
+        placeholderTextColor={colors.placeholder}
         value={form.rating}
         onChangeText={v => handleChange('rating', v)}
         keyboardType="numeric"
@@ -174,45 +180,31 @@ const MainScreen = () => {
       <TextInput
         style={styles.input}
         placeholder="Photo URL (optional)"
+        placeholderTextColor={colors.placeholder}
         value={form.img_url}
         onChangeText={v => handleChange('img_url', v)}
       />
-      <Button title={loading ? 'Submitting...' : 'Submit'} color="#b22222" onPress={handleSubmit} disabled={loading} />
-      <Button title="Logout" color="#888" onPress={handleLogout} />
-    </ScrollView>
+      <AppButton title="Submit" variant="primary" onPress={handleSubmit} loading={loading} />
+      <AppButton title="Logout" variant="muted" onPress={handleLogout} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#b22222',
+    marginBottom: spacing.lg,
+    color: colors.primary,
     textAlign: 'center',
   },
   input: {
-    width: '100%',
+    ...inputStyle,
     maxWidth: 400,
-    height: 44,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 4,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
   },
   error: {
-    color: 'red',
-    marginBottom: 8,
+    color: colors.error,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
 });

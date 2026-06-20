@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, Button, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -7,6 +7,9 @@ import { useAppContext } from '../context';
 import { getAuthToken, clearAuthToken } from '../api/auth';
 import { API_URL } from '../api/config';
 import { getErrorMessage } from '../api/errors';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { colors, spacing, card } from '../theme';
 
 const defaultImages: Record<string, any> = {
   red: require('../../assets/red.jpg'),
@@ -100,12 +103,9 @@ const UserHistoryScreen = () => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
+    <Screen refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <Text style={styles.heading}>Your Wine History</Text>
-      {loading && <ActivityIndicator size="large" color="#b22222" style={{ marginVertical: 32 }} />}
+      {loading && <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: spacing.xl }} />}
       {error && <Text style={styles.error}>{error}</Text>}
       {!loading && wines.length === 0 && <Text style={styles.noResults}>No wines found in your history.</Text>}
       {wines.map(wine => (
@@ -120,77 +120,61 @@ const UserHistoryScreen = () => {
           <Text style={styles.label}>Tasting Notes: <Text style={styles.value}>{wine.tasting_notes}</Text></Text>
           <Text style={styles.label}>Rating: <Text style={styles.value}>{wine.rating}</Text></Text>
           <View style={styles.buttonRow}>
-            <Button title="Pair It" color="#6b4226" onPress={() => navigation.navigate('Pairing', { wine })} />
-            <Button title="Edit" color="#888" onPress={() => handleEdit(wine)} />
-            <Button title="Delete" color="#b22222" onPress={() => handleDelete(wine.wine_id)} />
+            <AppButton title="Pair It" variant="secondary" onPress={() => navigation.navigate('Pairing', { wine })} />
+            <AppButton title="Edit" variant="muted" onPress={() => handleEdit(wine)} />
+            <AppButton title="Delete" variant="danger" onPress={() => handleDelete(wine.wine_id)} />
           </View>
         </View>
       ))}
-      <Button title="Go Back" color="#b22222" onPress={() => navigation.navigate('Main')} />
-      <Button title="Logout" color="#888" onPress={handleLogout} />
-    </ScrollView>
+      <AppButton title="Go Back" variant="primary" onPress={() => navigation.navigate('Main')} />
+      <AppButton title="Logout" variant="muted" onPress={handleLogout} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#b22222',
+    marginBottom: spacing.lg,
+    color: colors.primary,
     textAlign: 'center',
   },
   wineItem: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
+    ...card,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   image: {
     width: 130,
     height: 160,
     borderRadius: 8,
-    marginBottom: 12,
-    backgroundColor: '#eee',
+    marginBottom: spacing.sm,
+    backgroundColor: colors.border,
   },
   label: {
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.textDark,
   },
   value: {
     fontWeight: 'normal',
-    color: '#444',
+    color: colors.textBody,
   },
   noResults: {
     fontSize: 18,
-    color: '#888',
-    marginVertical: 32,
+    color: colors.muted,
+    marginVertical: spacing.xl,
     textAlign: 'center',
   },
   error: {
-    color: 'red',
-    marginBottom: 8,
+    color: colors.error,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     width: '100%',
-    marginTop: 12,
-    gap: 12,
+    marginTop: spacing.sm,
+    gap: spacing.xs,
   },
 });
 

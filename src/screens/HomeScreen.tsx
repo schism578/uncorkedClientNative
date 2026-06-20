@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAuthToken, clearAuthToken, getCurrentUser } from '../api/auth';
 import { useAppContext } from '../context';
 import type { Wine } from '../context';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { colors, spacing } from '../theme';
 
 // Define the type for the stack's param list
 export type RootStackParamList = {
@@ -44,45 +47,30 @@ const HomeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <Screen scroll={false}>
       <Text style={styles.heading}>making memories, one glass at a time</Text>
       <Text style={styles.subheading}>
         open something new. record your memories. revisit your favorites.
       </Text>
-      <Button
-        title="Begin"
-        color="#b22222"
-        onPress={() => navigation.navigate('Login')}
-      />
-      <Button
-        title="Logout"
-        color="#888"
-        onPress={handleLogout}
-      />
-    </View>
+      <AppButton title="Begin" variant="primary" onPress={() => navigation.navigate('Login')} />
+      <AppButton title="Logout" variant="muted" onPress={handleLogout} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: 'rgba(255, 198, 205, 0.1)',
-  },
   heading: {
     fontSize: 24,
-    marginBottom: 32,
+    marginBottom: spacing.lg,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.textDark,
   },
   subheading: {
     fontSize: 18,
-    marginBottom: 48,
+    marginBottom: spacing.xl,
     textAlign: 'center',
-    color: '#444',
+    color: colors.textBody,
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -7,6 +7,11 @@ import { useAppContext } from '../context';
 import { getAuthToken } from '../api/auth';
 import { API_URL } from '../api/config';
 import { getErrorMessage } from '../api/errors';
+import { Screen } from '../components/Screen';
+import { AppButton } from '../components/AppButton';
+import { Dropdown } from '../components/Dropdown';
+import { WINE_TYPE_OPTIONS } from '../constants';
+import { colors, spacing, input as inputStyle } from '../theme';
 
 type EditScreenRouteProp = RouteProp<RootStackParamList, 'EditWine'>;
 
@@ -78,54 +83,44 @@ const EditWineScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Screen>
       <Text style={styles.heading}>Edit Wine</Text>
       {error && <Text style={styles.error}>{error}</Text>}
-      <TextInput style={styles.input} placeholder="Wine Type" value={form.wine_type} onChangeText={v => handleChange('wine_type', v)} />
-      <TextInput style={styles.input} placeholder="Winemaker" value={form.winemaker} onChangeText={v => handleChange('winemaker', v)} />
-      <TextInput style={styles.input} placeholder="Wine Name" value={form.wine_name} onChangeText={v => handleChange('wine_name', v)} />
-      <TextInput style={styles.input} placeholder="Grape Varietals" value={form.varietal} onChangeText={v => handleChange('varietal', v)} />
-      <TextInput style={styles.input} placeholder="Region" value={form.region} onChangeText={v => handleChange('region', v)} />
-      <TextInput style={styles.input} placeholder="Vintage" value={String(form.vintage)} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Tasting Notes" value={form.tasting_notes} onChangeText={v => handleChange('tasting_notes', v)} />
-      <TextInput style={styles.input} placeholder="Rating (1-5)" value={String(form.rating)} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Photo URL (optional)" value={form.img_url || ''} onChangeText={v => handleChange('img_url', v)} />
-      <Button title={loading ? 'Saving...' : 'Save Changes'} color="#b22222" onPress={handleSubmit} disabled={loading} />
-      <Button title="Cancel" color="#888" onPress={() => navigation.goBack()} />
-    </ScrollView>
+      <Dropdown
+        placeholder="Wine Type"
+        value={form.wine_type || ''}
+        options={WINE_TYPE_OPTIONS}
+        onChange={v => handleChange('wine_type', v)}
+      />
+      <TextInput style={styles.input} placeholder="Winemaker" placeholderTextColor={colors.placeholder} value={form.winemaker} onChangeText={v => handleChange('winemaker', v)} />
+      <TextInput style={styles.input} placeholder="Wine Name" placeholderTextColor={colors.placeholder} value={form.wine_name} onChangeText={v => handleChange('wine_name', v)} />
+      <TextInput style={styles.input} placeholder="Grape Varietals" placeholderTextColor={colors.placeholder} value={form.varietal} onChangeText={v => handleChange('varietal', v)} />
+      <TextInput style={styles.input} placeholder="Region" placeholderTextColor={colors.placeholder} value={form.region} onChangeText={v => handleChange('region', v)} />
+      <TextInput style={styles.input} placeholder="Vintage" placeholderTextColor={colors.placeholder} value={String(form.vintage)} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes} onChangeText={v => handleChange('tasting_notes', v)} />
+      <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={String(form.rating)} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Photo URL (optional)" placeholderTextColor={colors.placeholder} value={form.img_url || ''} onChangeText={v => handleChange('img_url', v)} />
+      <AppButton title="Save Changes" variant="primary" onPress={handleSubmit} loading={loading} />
+      <AppButton title="Cancel" variant="muted" onPress={() => navigation.goBack()} />
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#b22222',
+    marginBottom: spacing.lg,
+    color: colors.primary,
     textAlign: 'center',
   },
   input: {
-    width: '100%',
+    ...inputStyle,
     maxWidth: 400,
-    height: 44,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 4,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
   },
   error: {
-    color: 'red',
-    marginBottom: 8,
+    color: colors.error,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
 });
