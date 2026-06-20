@@ -21,7 +21,7 @@ export async function searchWines(params: any): Promise<any[]> {
 }
 
 // Add Unsplash image search helper
-const UNSPLASH_ACCESS_KEY = 'YOUR_UNSPLASH_ACCESS_KEY'; // TODO: Replace with your Unsplash API key
+const UNSPLASH_ACCESS_KEY = 'FYQadBW7y2ZkCS-fEGxH__KMqeUgcI0yI8GZTBz3wyU';
 
 async function fetchWineImage(query: string): Promise<string | null> {
   try {
