@@ -22,7 +22,7 @@ const AppNavigator = () => (
       <Stack.Screen name="Main" component={MainScreen} options={{ title: 'Home' }} />
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="Results" component={ResultsScreen} />
-      <Stack.Screen name="UserHistory" component={UserHistoryScreen} />
+      <Stack.Screen name="UserHistory" component={UserHistoryScreen} options={{ title: 'Home' }} />
       <Stack.Screen name="EditWine" component={EditWineScreen} />
       <Stack.Screen name="Pairing" component={PairingScreen} />
     </Stack.Navigator>
