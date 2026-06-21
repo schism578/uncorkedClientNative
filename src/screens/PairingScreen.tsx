@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -11,6 +11,7 @@ import { openNearbySearch } from '../utils/maps';
 import { Screen } from '../components/Screen';
 import { AppButton } from '../components/AppButton';
 import { Dropdown } from '../components/Dropdown';
+import { PhotoPicker } from '../components/PhotoPicker';
 import { FOOD_TYPE_OPTIONS } from '../constants';
 import { colors, spacing, radius, card, input as inputStyle } from '../theme';
 
@@ -62,6 +63,7 @@ const PairingScreen = () => {
   const [manualName, setManualName] = useState('');
   const [manualType, setManualType] = useState('');
   const [manualNotes, setManualNotes] = useState('');
+  const [manualImgUrl, setManualImgUrl] = useState('');
   const [manualSaving, setManualSaving] = useState(false);
 
   // "Find More Pairings Like This" results
@@ -172,6 +174,7 @@ const PairingScreen = () => {
         food_type: manualType,
         name: manualName.trim(),
         notes: manualNotes.trim() || undefined,
+        img_url: manualImgUrl || undefined,
         source: 'user_added',
       });
       await loadSavedPairings();
@@ -272,6 +275,7 @@ const PairingScreen = () => {
         </TouchableOpacity>
         {isExpanded && (
           <View style={styles.linkDetail}>
+            {p.img_url ? <Image source={{ uri: p.img_url }} style={styles.linkImage} resizeMode="cover" /> : null}
             {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
             <AppButton title={nearby.label} variant="secondary" onPress={() => openNearbySearch(nearby.query)} />
             <View style={styles.buttonSpacer} />
@@ -340,6 +344,7 @@ const PairingScreen = () => {
               onChangeText={setManualNotes}
               multiline
             />
+            <PhotoPicker value={manualImgUrl} onChange={setManualImgUrl} />
             <AppButton
               title="Save"
               variant="primary"
@@ -439,6 +444,13 @@ const styles = StyleSheet.create({
   },
   linkDetail: {
     marginTop: spacing.sm,
+  },
+  linkImage: {
+    width: '100%',
+    height: 160,
+    borderRadius: radius.md,
+    backgroundColor: colors.border,
+    marginBottom: spacing.sm,
   },
   badge: {
     fontSize: 12,
