@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAuthToken, clearAuthToken, getCurrentUser } from '../api/auth';
 import { useAppContext } from '../context';
-import type { Wine } from '../context';
+import type { Wine, FoodPairing } from '../context';
 import { Screen } from '../components/Screen';
 import { AppButton } from '../components/AppButton';
 import { colors, spacing } from '../theme';
@@ -20,6 +20,7 @@ export type RootStackParamList = {
   UserHistory: undefined;
   EditWine: { wine: any };
   Pairing: { wine: Wine };
+  EditPairing: { pairing: FoodPairing };
 };
 
 const HomeScreen = () => {

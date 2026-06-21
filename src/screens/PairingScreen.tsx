@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
 import { useAppContext } from '../context';
@@ -91,9 +91,11 @@ const PairingScreen = () => {
     }
   }, [userInfo, wine.wine_id]);
 
-  useEffect(() => {
-    loadSavedPairings();
-  }, [loadSavedPairings]);
+  useFocusEffect(
+    useCallback(() => {
+      loadSavedPairings();
+    }, [loadSavedPairings])
+  );
 
   const fetchSuggestions = () => {
     setLoadingSuggestions(true);
@@ -279,6 +281,8 @@ const PairingScreen = () => {
             {p.notes ? <Text style={styles.cardBody}>{p.notes}</Text> : null}
             <AppButton title={nearby.label} variant="secondary" onPress={() => openNearbySearch(nearby.query)} />
             <View style={styles.buttonSpacer} />
+            <AppButton title="Edit Pairing" variant="muted" onPress={() => navigation.navigate('EditPairing', { pairing: p })} />
+            <View style={styles.buttonSpacer} />
             <AppButton title="Delete" variant="danger" onPress={() => handleDelete(p.pairing_id)} />
           </View>
         )}
@@ -294,7 +298,7 @@ const PairingScreen = () => {
       <Text style={styles.heading}>Pairings for {wine.wine_name}</Text>
 
       <AppButton
-        title={showAiSuggestions ? 'Hide AI Suggestions' : 'Get AI Suggestions'}
+        title={showAiSuggestions ? 'Hide Suggestions' : 'Get Suggestions'}
         variant="primary"
         onPress={handleToggleAiSuggestions}
       />
@@ -307,7 +311,7 @@ const PairingScreen = () => {
 
       {showAiSuggestions && (
         <View style={styles.section}>
-          <Text style={styles.subheading}>AI Suggestions</Text>
+          <Text style={styles.subheading}>Suggestions</Text>
           {loadingSuggestions && <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: spacing.xl }} />}
           {suggestionError && <Text style={styles.error}>{suggestionError}</Text>}
           {!loadingSuggestions && !suggestionError && suggestions.length === 0 && (

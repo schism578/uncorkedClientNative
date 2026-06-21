@@ -45,6 +45,20 @@ export async function createPairing(
   return res.json();
 }
 
+export async function updatePairing(
+  user_id: string,
+  pairing_id: string,
+  pairing: { food_type?: string; name?: string; notes?: string; img_url?: string }
+): Promise<FoodPairing> {
+  const res = await fetch(`${API_URL}/pairing/${user_id}/${pairing_id}`, {
+    method: 'PATCH',
+    headers: await authHeaders(),
+    body: JSON.stringify(pairing),
+  });
+  if (!res.ok) throw await res.json();
+  return res.json();
+}
+
 export async function deletePairing(user_id: string, pairing_id: string): Promise<void> {
   const res = await fetch(`${API_URL}/pairing/${user_id}/${pairing_id}`, {
     method: 'DELETE',

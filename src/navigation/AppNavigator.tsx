@@ -10,6 +10,7 @@ import ResultsScreen from '../screens/ResultsScreen';
 import UserHistoryScreen from '../screens/UserHistoryScreen';
 import EditWineScreen from '../screens/EditWineScreen';
 import PairingScreen from '../screens/PairingScreen';
+import EditPairingScreen from '../screens/EditPairingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ const AppNavigator = () => (
       <Stack.Screen name="UserHistory" component={UserHistoryScreen} options={{ title: 'Home' }} />
       <Stack.Screen name="EditWine" component={EditWineScreen} />
       <Stack.Screen name="Pairing" component={PairingScreen} />
+      <Stack.Screen name="EditPairing" component={EditPairingScreen} options={{ title: 'Edit Pairing' }} />
     </Stack.Navigator>
   </NavigationContainer>
 );
