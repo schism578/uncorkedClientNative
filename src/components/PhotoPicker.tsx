@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image, Alert, StyleSheet } from 'react-native';
+import { View, Image, Alert, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { AppButton } from './AppButton';
 import { colors, radius, spacing } from '../theme';
@@ -30,6 +30,13 @@ export function PhotoPicker({ value, onChange }: PhotoPickerProps) {
   };
 
   const handleTakePhoto = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Camera permission needed', 'Allow camera access to take a photo.');
+        return;
+      }
+    }
     const response = await launchCamera(pickerOptions);
     handleResponse(response);
   };
