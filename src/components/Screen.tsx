@@ -1,5 +1,5 @@
 import React, { ReactNode, ComponentProps } from 'react';
-import { View, ScrollView, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Platform, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { colors, spacing } from '../theme';
 
 interface ScreenProps {
@@ -12,17 +12,19 @@ interface ScreenProps {
 export function Screen({ children, scroll = true, contentStyle, refreshControl }: ScreenProps) {
   if (!scroll) {
     return (
-      <View style={[styles.background, styles.centeredContent, contentStyle]}>
-        {children}
-      </View>
+      <KeyboardAvoidingView style={styles.background} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={[styles.centeredContent, contentStyle]}>
+          {children}
+        </View>
+      </KeyboardAvoidingView>
     );
   }
   return (
-    <View style={styles.background}>
+    <KeyboardAvoidingView style={styles.background} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={[styles.content, contentStyle]} refreshControl={refreshControl}>
         {children}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
