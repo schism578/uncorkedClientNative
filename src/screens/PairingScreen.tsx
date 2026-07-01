@@ -369,7 +369,7 @@ const PairingScreen = () => {
           </View>
 
           {(loadingSimilar || similarError || similarSuggestions.length > 0) && (
-            <View>
+            <View style={{ width: '100%' }}>
               <Text style={styles.subheading}>More Like This</Text>
               {loadingSimilar && <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: spacing.xl }} />}
               {similarError && <Text style={styles.error}>{similarError}</Text>}

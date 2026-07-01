@@ -1,6 +1,8 @@
 import React, { ReactNode, ComponentProps } from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Platform, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, ImageBackground, Platform, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { colors, spacing } from '../theme';
+
+const backgroundImage = require('../../assets/background.jpg');
 
 interface ScreenProps {
   children: ReactNode;
@@ -10,28 +12,34 @@ interface ScreenProps {
 }
 
 export function Screen({ children, scroll = true, contentStyle, refreshControl }: ScreenProps) {
-  if (!scroll) {
-    return (
-      <KeyboardAvoidingView style={styles.background} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.centeredContent, contentStyle]}>
-          {children}
-        </View>
-      </KeyboardAvoidingView>
-    );
-  }
   return (
-    <KeyboardAvoidingView style={styles.background} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[styles.content, contentStyle]} refreshControl={refreshControl}>
-        {children}
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <ImageBackground source={backgroundImage} style={styles.root} resizeMode="cover">
+      <View style={styles.overlay} />
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {scroll ? (
+          <ScrollView contentContainerStyle={[styles.content, contentStyle]} refreshControl={refreshControl}>
+            {children}
+          </ScrollView>
+        ) : (
+          <View style={[styles.centeredContent, contentStyle]}>
+            {children}
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
+  root: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
+  },
+  flex: {
+    flex: 1,
   },
   content: {
     flexGrow: 1,

@@ -21,7 +21,13 @@ export function PhotoPicker({ value, onChange }: PhotoPickerProps) {
   const handleResponse = (response: ImagePickerResponse) => {
     if (response.didCancel) return;
     if (response.errorCode) {
-      Alert.alert('Error', response.errorMessage || 'Could not get photo.');
+      if (response.errorCode === 'camera_unavailable') {
+        Alert.alert('Camera unavailable', 'No camera was found on this device. Use "Choose Photo" to pick from your library instead.');
+      } else if (response.errorCode === 'permission') {
+        Alert.alert('Permission denied', 'Camera access was denied. Enable it in Settings > Privacy > Camera.');
+      } else {
+        Alert.alert('Error', response.errorMessage || 'Could not get photo.');
+      }
       return;
     }
     const asset = response.assets?.[0];

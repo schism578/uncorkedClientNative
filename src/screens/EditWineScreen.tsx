@@ -35,8 +35,9 @@ const EditWineScreen = () => {
     if (!form.wine_type?.trim()) return 'Wine type is required.';
     if (!form.wine_name?.trim()) return 'Wine name is required.';
     // Vintage: must be a 4-digit year or 'NV'
-    if (form.vintage && form.vintage.trim().toUpperCase() !== 'NV') {
-      const year = parseInt(form.vintage, 10);
+    const vintageStr = form.vintage != null ? String(form.vintage).trim() : '';
+    if (vintageStr && vintageStr.toUpperCase() !== 'NV') {
+      const year = parseInt(vintageStr, 10);
       const currentYear = new Date().getFullYear();
       if (isNaN(year) || year < 1900 || year > currentYear + 1) {
         return 'Vintage must be a valid year (1900-' + (currentYear + 1) + ') or "NV".';
@@ -59,13 +60,14 @@ const EditWineScreen = () => {
     setLoading(true);
     try {
       const token = await getAuthToken();
+      const payload = { ...form, img_url: form.img_url || null };
       const res = await fetch(`${API_URL}/wine/${userInfo?.user_id}/${wine.wine_id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw await res.json();
       const updatedWine = await res.json();
@@ -93,9 +95,9 @@ const EditWineScreen = () => {
       <TextInput style={styles.input} placeholder="Wine Name" placeholderTextColor={colors.placeholder} value={form.wine_name} onChangeText={v => handleChange('wine_name', v)} />
       <TextInput style={styles.input} placeholder="Grape Varietals" placeholderTextColor={colors.placeholder} value={form.varietal} onChangeText={v => handleChange('varietal', v)} />
       <TextInput style={styles.input} placeholder="Region" placeholderTextColor={colors.placeholder} value={form.region} onChangeText={v => handleChange('region', v)} />
-      <TextInput style={styles.input} placeholder="Vintage" placeholderTextColor={colors.placeholder} value={String(form.vintage)} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Vintage" placeholderTextColor={colors.placeholder} value={form.vintage != null ? String(form.vintage) : ''} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
       <TextInput style={styles.input} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes} onChangeText={v => handleChange('tasting_notes', v)} />
-      <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={String(form.rating)} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={form.rating != null ? String(form.rating) : ''} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
       <PhotoPicker value={form.img_url || ''} onChange={v => handleChange('img_url', v)} />
       <AppButton title="Save Changes" variant="primary" onPress={handleSubmit} loading={loading} />
       <AppButton title="Cancel" variant="muted" onPress={() => navigation.goBack()} />
