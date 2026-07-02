@@ -28,6 +28,9 @@
       align-items: center;
       justify-content: space-between;
       padding: 18px 40px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
     }
@@ -39,6 +42,10 @@
     }
     .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
     .nav-brand span { font-size: 1.2rem; font-weight: 700; color: var(--red); letter-spacing: -0.02em; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--red); }
+    @media (max-width: 600px) { nav { padding: 14px 20px; } .nav-links { display: none; } }
 
     .page {
       max-width: 680px;
@@ -92,6 +99,11 @@
       <img src="assets/uncorked-icon-64x64.jpeg" alt="uncorked icon" />
       <span>uncorked</span>
     </a>
+    <ul class="nav-links">
+      <li><a href="/#features">Features</a></li>
+      <li><a href="support.html">Support</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+    </ul>
   </nav>
 
   <div class="page">
