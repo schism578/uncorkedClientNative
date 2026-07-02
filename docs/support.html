@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — uncorked</title>
+  <meta name="description" content="Get help with uncorked, the personal wine journal app for iOS." />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red:     #b22222;
+      --cream:   #F7F0E6;
+      --surface: #fffdf8;
+      --border:  #ddd0ba;
+      --text:    #2c2c2c;
+      --muted:   #6b6358;
+      --radius:  12px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
+    .nav-brand span { font-size: 1.2rem; font-weight: 700; color: var(--red); letter-spacing: -0.02em; }
+
+    .page {
+      max-width: 680px;
+      margin: 56px auto;
+      padding: 0 24px 80px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--red);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-size: 1rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .card p { color: var(--muted); font-size: 0.95rem; margin-bottom: 10px; }
+    .card p:last-child { margin-bottom: 0; }
+    a { color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
+    a:hover { color: #8e1b1b; }
+
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 24px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-brand" href="/">
+      <img src="assets/uncorked-icon-64x64.jpeg" alt="uncorked icon" />
+      <span>uncorked</span>
+    </a>
+  </nav>
+
+  <div class="page">
+    <h1>Support</h1>
+    <p class="subtitle">We're here to help. Here's how to get in touch or find answers.</p>
+
+    <div class="card">
+      <h2>Contact Us</h2>
+      <p>For any questions, bug reports, or feature requests, reach out by email:</p>
+      <p><a href="mailto:ajmarquis3@gmail.com">ajmarquis3@gmail.com</a></p>
+      <p>We typically respond within 1–2 business days.</p>
+    </div>
+
+    <div class="card">
+      <h2>Frequently Asked Questions</h2>
+      <p><strong>How do I add a wine?</strong><br />
+      After logging in, tap the Home tab and fill in the wine details. You can attach a photo from your camera or library before saving.</p>
+
+      <p><strong>How do food pairings work?</strong><br />
+      Open any wine from your collection and tap "Pair It." uncorked will suggest complementary foods based on the wine's profile. You can also record your own pairings manually.</p>
+
+      <p><strong>Can I edit a wine or pairing after saving?</strong><br />
+      Yes — tap any entry in your history to expand it, then use the Edit button to update any field.</p>
+
+      <p><strong>How do I delete a wine?</strong><br />
+      Open the wine's detail card in your history and tap Delete.</p>
+
+      <p><strong>Is my data private?</strong><br />
+      Yes. Your collection is stored securely under your account and is never shared with third parties. See our <a href="privacy.html">Privacy Policy</a> for details.</p>
+    </div>
+
+    <div class="card">
+      <h2>Report a Bug</h2>
+      <p>Found something that doesn't look right? Email us at <a href="mailto:ajmarquis3@gmail.com">ajmarquis3@gmail.com</a> with a description of the issue and your iOS version. Screenshots are always helpful.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p><a href="/">Home</a> &nbsp;&middot;&nbsp; <a href="privacy.html">Privacy Policy</a> &nbsp;&middot;&nbsp; &copy; 2026 uncorked</p>
+  </footer>
+
+</body>
+</html>

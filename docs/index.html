@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>uncorked — Your Personal Wine Journal</title>
+  <meta name="description" content="Log the wines you love, discover perfect food pairings, and build a collection worth remembering. uncorked is the effortless wine journal for iOS." />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:     #b22222;
+      --red-dk:  #8e1b1b;
+      --cream:   #F7F0E6;
+      --surface: #fffdf8;
+      --border:  #ddd0ba;
+      --text:    #2c2c2c;
+      --muted:   #6b6358;
+      --radius:  12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .nav-brand span {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--red);
+      letter-spacing: -0.02em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--red); }
+
+    /* ── HERO ── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 80px 24px 64px;
+      background:
+        linear-gradient(to bottom, rgba(247,240,230,0.0) 0%, rgba(247,240,230,1) 100%),
+        url('assets/background.jpg') center/cover no-repeat;
+    }
+    .hero-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(178,34,34,0.22);
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 3.6rem);
+      font-weight: 800;
+      color: var(--red);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 36px;
+    }
+    .badge-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .app-store-badge {
+      display: inline-block;
+      text-decoration: none;
+    }
+    .app-store-badge img {
+      height: 48px;
+      border-radius: 8px;
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 64px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .features h2 {
+      text-align: center;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .features-sub {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 48px;
+      font-size: 1rem;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+    }
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── CTA STRIP ── */
+    .cta-strip {
+      background: var(--red);
+      color: #fff;
+      text-align: center;
+      padding: 56px 24px;
+    }
+    .cta-strip h2 {
+      font-size: clamp(1.4rem, 4vw, 1.9rem);
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    .cta-strip p {
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-bottom: 28px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .cta-strip .app-store-badge img {
+      height: 52px;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    footer a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    footer a:hover { color: var(--red); }
+    footer .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 10px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 56px 20px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-brand" href="/">
+      <img src="assets/uncorked-icon-64x64.jpeg" alt="uncorked icon" />
+      <span>uncorked</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="support.html">Support</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img class="hero-icon" src="assets/uncorked-icon-128x128.jpeg" alt="uncorked app icon" />
+    <h1>Remember every<br/>wine you love.</h1>
+    <p>Your personal wine journal. Log bottles, discover perfect food pairings, and build a collection worth remembering — one pour at a time.</p>
+    <div class="badge-row">
+      <!-- Replace href with your App Store link once live -->
+      <a class="app-store-badge" href="#" aria-label="Download on the App Store">
+        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" />
+      </a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <h2>Everything you need at the table</h2>
+    <p class="features-sub">Built for real moments — the birthday bottle, the weekend discovery, the house wine that surprised you.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🍷</span>
+        <h3>Log Any Wine in Seconds</h3>
+        <p>Capture the name, varietal, region, vintage, tasting notes, and your personal rating. Attach a photo so you'll always recognize the label.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🧀</span>
+        <h3>Discover Perfect Pairings</h3>
+        <p>Get personalized food pairing suggestions for any wine in your collection. Save the ones you love and add your own notes and photos.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📍</span>
+        <h3>Find Somewhere to Enjoy It</h3>
+        <p>Tap any pairing to find nearby restaurants and wine bars that might be serving something similar — right from inside the app.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📚</span>
+        <h3>Your Collection, Always at Hand</h3>
+        <p>Browse your full wine history, edit entries as your palate evolves, and search by name or type. Private and tied to your account.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-strip">
+    <h2>Start your cellar today.</h2>
+    <p>Free to download. No ads. Just your wines.</p>
+    <!-- Replace href with your App Store link once live -->
+    <a class="app-store-badge" href="#" aria-label="Download on the App Store">
+      <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" />
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-links">
+      <a href="support.html">Support</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+    <p>&copy; 2026 uncorked. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
