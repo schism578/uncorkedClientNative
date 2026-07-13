@@ -61,15 +61,18 @@ export async function scanWineLabel(base64Image: string): Promise<ScannedWineDat
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message ?? 'Label scan failed');
+    throw new Error(`API error ${response.status}: ${error.error?.message ?? JSON.stringify(error)}`);
   }
 
   const data = await response.json();
-  const text: string = data.content?.[0]?.text ?? '{}';
+  const raw: string = data.content?.[0]?.text ?? '';
+
+  // Strip markdown code fences if Claude wrapped the JSON
+  const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
 
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error('Could not parse label data. Please fill in the fields manually.');
+    throw new Error(`Could not parse label response. Raw: ${text.slice(0, 200)}`);
   }
 }

@@ -60,7 +60,7 @@ const MainScreen = () => {
             tasting_notes: scanned.tasting_notes ?? prev.tasting_notes,
           }));
         } catch (err: any) {
-          Alert.alert('Scan failed', err.message ?? 'Could not read the label. Please fill in manually.');
+          Alert.alert('Scan failed', err.message ?? String(err));
         } finally {
           setScanning(false);
         }
