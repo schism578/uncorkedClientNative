@@ -47,9 +47,12 @@ const LoginScreen = () => {
     }
     try {
       await postUser({ username: signupUsername, password: signupPassword });
-      Alert.alert('Profile created!', 'You can now log in.');
-      setSignupUsername('');
-      setSignupPassword('');
+      const res = await postLogin({ username: signupUsername, password: signupPassword });
+      await saveAuthToken(res.authToken);
+      setUserInfo({ user_id: String(res.user.user_id), username: res.user.username });
+      Alert.alert('Profile created!', `Welcome to uncorked, ${signupUsername}!`, [
+        { text: 'Continue', onPress: () => navigation.navigate('Dashboard', { isNewUser: true }) },
+      ]);
     } catch (err: any) {
       setSignupError(getErrorMessage(err, 'Sign up failed'));
     }

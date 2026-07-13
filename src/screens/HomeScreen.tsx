@@ -13,7 +13,7 @@ import { colors, spacing } from '../theme';
 export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
-  Dashboard: undefined;
+  Dashboard: { isNewUser?: boolean } | undefined;
   Main: undefined;
   Search: undefined;
   Results: undefined;
