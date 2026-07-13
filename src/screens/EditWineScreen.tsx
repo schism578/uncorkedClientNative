@@ -96,7 +96,7 @@ const EditWineScreen = () => {
       <TextInput style={styles.input} placeholder="Grape Varietals" placeholderTextColor={colors.placeholder} value={form.varietal} onChangeText={v => handleChange('varietal', v)} />
       <TextInput style={styles.input} placeholder="Region" placeholderTextColor={colors.placeholder} value={form.region} onChangeText={v => handleChange('region', v)} />
       <TextInput style={styles.input} placeholder="Vintage" placeholderTextColor={colors.placeholder} value={form.vintage != null ? String(form.vintage) : ''} onChangeText={v => handleChange('vintage', v)} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes} onChangeText={v => handleChange('tasting_notes', v)} />
+      <TextInput style={[styles.input, styles.notesInput]} placeholder="Tasting Notes" placeholderTextColor={colors.placeholder} value={form.tasting_notes} onChangeText={v => handleChange('tasting_notes', v)} multiline numberOfLines={4} />
       <TextInput style={styles.input} placeholder="Rating (1-5)" placeholderTextColor={colors.placeholder} value={form.rating != null ? String(form.rating) : ''} onChangeText={v => handleChange('rating', v)} keyboardType="numeric" />
       <PhotoPicker value={form.img_url || ''} onChange={v => handleChange('img_url', v)} />
       <AppButton title="Save Changes" variant="primary" onPress={handleSubmit} loading={loading} />
@@ -116,6 +116,11 @@ const styles = StyleSheet.create({
   input: {
     ...inputStyle,
     maxWidth: 400,
+  },
+  notesInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: spacing.sm,
   },
   error: {
     color: colors.error,

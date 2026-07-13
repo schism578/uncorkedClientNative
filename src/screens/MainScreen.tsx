@@ -198,11 +198,13 @@ const MainScreen = () => {
         onChangeText={v => handleChange('region', v)}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.notesInput]}
         placeholder="Tasting Notes"
         placeholderTextColor={colors.placeholder}
         value={form.tasting_notes}
         onChangeText={v => handleChange('tasting_notes', v)}
+        multiline
+        numberOfLines={4}
       />
       <TextInput
         style={styles.input}
@@ -231,6 +233,11 @@ const styles = StyleSheet.create({
   input: {
     ...inputStyle,
     maxWidth: 400,
+  },
+  notesInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: spacing.sm,
   },
   error: {
     color: colors.error,

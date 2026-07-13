@@ -24,10 +24,51 @@ const foodTypeLabels: Record<string, string> = {
   dish: 'Dish',
 };
 
-function getNearbySearch(foodType: string, name: string): { label: string; query: string } {
+const SPECIALTY_INGREDIENTS: Array<{ match: string; store: string }> = [
+  { match: 'foie gras', store: 'specialty food store' },
+  { match: 'truffle', store: 'specialty grocery' },
+  { match: 'wagyu', store: 'specialty butcher' },
+  { match: 'kobe beef', store: 'specialty butcher' },
+  { match: 'burrata', store: 'Italian deli' },
+  { match: 'lobster', store: 'seafood market' },
+  { match: 'caviar', store: 'specialty food store' },
+  { match: 'saffron', store: 'specialty spice shop' },
+  { match: 'bottarga', store: 'specialty Italian grocer' },
+  { match: 'bone marrow', store: 'specialty butcher' },
+  { match: 'sweetbreads', store: 'specialty butcher' },
+  { match: 'morel', store: 'specialty produce market' },
+  { match: 'porcini', store: 'specialty grocery' },
+  { match: 'chanterelle', store: 'specialty produce market' },
+  { match: 'duck confit', store: 'specialty food store' },
+  { match: 'iberico', store: 'specialty charcuterie shop' },
+  { match: 'prosciutto di parma', store: 'Italian deli' },
+  { match: 'miso', store: 'Asian grocery store' },
+  { match: 'dashi', store: 'Asian grocery store' },
+  { match: 'tahini', store: 'Middle Eastern grocery' },
+  { match: 'preserved lemon', store: 'specialty grocery' },
+];
+
+const PANTRY_WORDS = ['salt', 'pepper', 'oil', 'butter', 'flour', 'sugar', 'water', 'garlic', 'onion', 'cream', 'stock', 'broth', 'vinegar', 'lemon juice', 'olive oil'];
+
+function buildDishQuery(name: string, ingredients?: string[]): string {
+  if (ingredients && ingredients.length > 0) {
+    const joined = ingredients.join(' ').toLowerCase();
+    const specialty = SPECIALTY_INGREDIENTS.find(s => joined.includes(s.match));
+    if (specialty) return `${specialty.match} ${specialty.store}`;
+
+    const notable = ingredients.find(ing => {
+      const lower = ing.toLowerCase();
+      return !PANTRY_WORDS.some(p => lower.startsWith(p));
+    });
+    if (notable) return `${notable.toLowerCase()} grocery store`;
+  }
+  return `${name} ingredients specialty grocery store`;
+}
+
+function getNearbySearch(foodType: string, name: string, ingredients?: string[]): { label: string; query: string } {
   if (foodType === 'cheese') return { label: 'Find Nearby', query: `${name} cheese shop` };
-  if (foodType === 'charcuterie') return { label: 'Find Nearby', query: `${name} butcher` };
-  return { label: 'Find Ingredients Nearby', query: 'grocery store' };
+  if (foodType === 'charcuterie') return { label: 'Find Nearby', query: `${name} charcuterie deli butcher` };
+  return { label: 'Find Ingredients Nearby', query: buildDishQuery(name, ingredients) };
 }
 
 function formatNotes(s: PairingSuggestion): string {
@@ -220,12 +261,13 @@ const PairingScreen = () => {
     savingIdx: number | null,
     saveLabel: string
   ) => {
-    const nearby = getNearbySearch(s.food_type, s.name);
+    const nearby = getNearbySearch(s.food_type, s.name, s.recipe?.ingredients);
     return (
       <View key={`${s.name}-${i}`} style={styles.card}>
         <Text style={styles.badge}>{foodTypeLabels[s.food_type] || s.food_type}</Text>
         {s.recipe ? (
           <View>
+            <Text style={styles.dishTitle}>{s.name}</Text>
             <Text style={styles.cardSubheading}>Ingredients</Text>
             {s.recipe.ingredients.map((ing, idx) => (
               <Text key={idx} style={styles.cardBody}>{`• ${ing}`}</Text>
@@ -318,7 +360,7 @@ const PairingScreen = () => {
             <Text style={styles.noResults}>No suggestions available right now.</Text>
           )}
           {suggestions.map((s, i) =>
-            renderSuggestionCard(s, i, edits, handleEditChange, handleSaveSuggestion, savingIndex, 'Save to my memories')
+            renderSuggestionCard(s, i, edits, handleEditChange, handleSaveSuggestion, savingIndex, 'Save for later')
           )}
         </View>
       )}
@@ -462,6 +504,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textTransform: 'uppercase',
     marginBottom: spacing.xs,
+  },
+  dishTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: colors.textDark,
+    marginBottom: spacing.sm,
   },
   cardBody: {
     fontSize: 14,
