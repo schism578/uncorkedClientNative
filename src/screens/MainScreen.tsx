@@ -3,11 +3,13 @@ import { Text, TextInput, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
+import { launchCamera } from 'react-native-image-picker';
 import { getAuthToken, clearAuthToken } from '../api/auth';
 import { useAppContext } from '../context';
 import { fetchWineImage } from '../api/wine';
 import { API_URL } from '../api/config';
 import { getErrorMessage } from '../api/errors';
+import { scanWineLabel } from '../api/labelScan';
 import { Screen } from '../components/Screen';
 import { AppButton } from '../components/AppButton';
 import { Dropdown } from '../components/Dropdown';
@@ -31,9 +33,39 @@ const MainScreen = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   const handleChange = (key: string, value: string) => {
     setForm({ ...form, [key]: value });
+  };
+
+  const handleScan = () => {
+    launchCamera(
+      { mediaType: 'photo', includeBase64: true, quality: 0.9, maxWidth: 2048, maxHeight: 2048 },
+      async (response) => {
+        if (response.didCancel || response.errorCode) return;
+        const base64 = response.assets?.[0]?.base64;
+        if (!base64) return;
+        setScanning(true);
+        try {
+          const scanned = await scanWineLabel(base64);
+          setForm(prev => ({
+            ...prev,
+            winemaker:     scanned.winemaker     ?? prev.winemaker,
+            wine_type:     scanned.wine_type     ?? prev.wine_type,
+            wine_name:     scanned.wine_name     ?? prev.wine_name,
+            varietal:      scanned.varietal      ?? prev.varietal,
+            vintage:       scanned.vintage       ?? prev.vintage,
+            region:        scanned.region        ?? prev.region,
+            tasting_notes: scanned.tasting_notes ?? prev.tasting_notes,
+          }));
+        } catch (err: any) {
+          Alert.alert('Scan failed', err.message ?? 'Could not read the label. Please fill in manually.');
+        } finally {
+          setScanning(false);
+        }
+      }
+    );
   };
 
   // Validation helper
@@ -116,6 +148,12 @@ const MainScreen = () => {
   return (
     <Screen>
       <Text style={styles.heading}>Add a New Wine</Text>
+      <AppButton
+        title={scanning ? 'Scanning label...' : 'Scan Label with Camera'}
+        variant="secondary"
+        onPress={handleScan}
+        loading={scanning}
+      />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <TextInput
         style={styles.input}
