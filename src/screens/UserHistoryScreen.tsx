@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, Image, StyleSheet, ActivityIndicator, RefreshControl, Alert, Share } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -9,6 +10,7 @@ import { API_URL } from '../api/config';
 import { getErrorMessage } from '../api/errors';
 import { Screen } from '../components/Screen';
 import { AppButton } from '../components/AppButton';
+import WineShareCard from '../components/WineShareCard';
 import { colors, spacing, card } from '../theme';
 
 const defaultImages: Record<string, any> = {
@@ -24,6 +26,8 @@ const UserHistoryScreen = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sharingWine, setSharingWine] = useState<any | null>(null);
+  const shareCardRef = useRef<View>(null);
 
   const fetchHistory = useCallback(async () => {
     if (!userInfo) return;
@@ -81,6 +85,20 @@ const UserHistoryScreen = () => {
     navigation.navigate('EditWine', { wine });
   };
 
+  const handleShare = (wine: any) => {
+    setSharingWine(wine);
+    setTimeout(async () => {
+      try {
+        const uri = await captureRef(shareCardRef, { format: 'png', quality: 1.0 });
+        await Share.share({ url: uri });
+      } catch {
+        Alert.alert('Share failed', 'Could not create share image.');
+      } finally {
+        setSharingWine(null);
+      }
+    }, 300);
+  };
+
   const handleLogout = async () => {
     await clearAuthToken();
     setUserInfo(null);
@@ -120,12 +138,18 @@ const UserHistoryScreen = () => {
           <Text style={styles.label}>Tasting Notes: <Text style={styles.value}>{wine.tasting_notes}</Text></Text>
           <Text style={styles.label}>Rating: <Text style={styles.value}>{wine.rating}</Text></Text>
           <View style={styles.buttonRow}>
+            <AppButton title="Share" variant="secondary" onPress={() => handleShare(wine)} />
             <AppButton title="Pair It" variant="secondary" onPress={() => navigation.navigate('Pairing', { wine })} />
             <AppButton title="Edit" variant="muted" onPress={() => handleEdit(wine)} />
             <AppButton title="Delete" variant="danger" onPress={() => handleDelete(wine.wine_id)} />
           </View>
         </View>
       ))}
+      {sharingWine && (
+        <View style={styles.offScreen} pointerEvents="none">
+          <WineShareCard ref={shareCardRef} wine={sharingWine} />
+        </View>
+      )}
       <AppButton title="Search Your Wines" variant="secondary" onPress={() => navigation.navigate('Search')} />
       <AppButton title="Go Back" variant="primary" onPress={() => navigation.navigate('Dashboard')} />
       <AppButton title="Logout" variant="muted" onPress={handleLogout} />
@@ -176,6 +200,11 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: spacing.sm,
     gap: spacing.xs,
+  },
+  offScreen: {
+    position: 'absolute',
+    top: -5000,
+    left: 0,
   },
 });
 
