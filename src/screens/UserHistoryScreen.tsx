@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, RefreshControl, Alert, Share } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, RefreshControl, Alert, Share, Platform } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -86,6 +86,20 @@ const UserHistoryScreen = () => {
   };
 
   const handleShare = (wine: any) => {
+    if (Platform.OS === 'android') {
+      const parts = [
+        wine.wine_name,
+        wine.winemaker,
+        wine.wine_type && wine.vintage ? `${wine.wine_type} · ${wine.vintage}` : wine.wine_type || wine.vintage,
+        wine.region,
+        wine.varietal,
+        wine.tasting_notes,
+        wine.rating ? `Rating: ${wine.rating}/5` : null,
+        'Logged with uncorked.pro',
+      ].filter(Boolean);
+      Share.share({ message: parts.join('\n') });
+      return;
+    }
     setSharingWine(wine);
     setTimeout(async () => {
       try {

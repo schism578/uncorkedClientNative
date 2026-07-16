@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, TextInput, StyleSheet, Alert } from 'react-native';
+import { Text, TextInput, StyleSheet, Alert, Platform, PermissionsAndroid } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './HomeScreen';
@@ -39,7 +39,14 @@ const MainScreen = () => {
     setForm({ ...form, [key]: value });
   };
 
-  const handleScan = () => {
+  const handleScan = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Camera permission needed', 'Allow camera access to scan a wine label.');
+        return;
+      }
+    }
     launchCamera(
       { mediaType: 'photo', includeBase64: true, quality: 0.9, maxWidth: 2048, maxHeight: 2048 },
       async (response) => {
@@ -114,7 +121,7 @@ const MainScreen = () => {
         wine_type: form.wine_type,
         wine_name: form.wine_name,
         varietal: form.varietal,
-        vintage: form.vintage.toUpperCase() === 'NV' ? 'NV' : parseInt(form.vintage) || 0,
+        vintage: form.vintage.toUpperCase() === 'NV' || !form.vintage.trim() ? null : parseInt(form.vintage) || null,
         region: form.region,
         tasting_notes: form.tasting_notes,
         rating: parseInt(form.rating) || 0,
