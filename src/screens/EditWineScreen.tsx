@@ -60,7 +60,9 @@ const EditWineScreen = () => {
     setLoading(true);
     try {
       const token = await getAuthToken();
-      const payload = { ...form, img_url: form.img_url || null };
+      const vintageRaw = form.vintage != null ? String(form.vintage).trim() : '';
+      const vintage = vintageRaw.toUpperCase() === 'NV' || !vintageRaw ? null : parseInt(vintageRaw) || null;
+      const payload = { ...form, img_url: form.img_url || null, vintage };
       const res = await fetch(`${API_URL}/wine/${userInfo?.user_id}/${wine.wine_id}`, {
         method: 'PATCH',
         headers: {
